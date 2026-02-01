@@ -5,8 +5,8 @@
       <div class="container mx-auto px-4 h-16 flex items-center justify-between">
         <!-- Logo -->
         <router-link to="/" class="flex items-center gap-2 group">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-cyan-500 flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
-            AA
+          <div class="w-10 h-10 rounded-lg overflow-hidden shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+            <img src="/logo.png" alt="AlphaAgent Logo" class="w-full h-full object-cover" />
           </div>
           <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 tracking-tight">
             AlphaAgent
