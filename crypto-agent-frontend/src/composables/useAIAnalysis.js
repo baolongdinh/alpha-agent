@@ -1,0 +1,58 @@
+import { ref } from 'vue'
+import { api } from '../services/api'
+
+export function useAIAnalysis() {
+  const analysis = ref(null)
+  const isAnalyzing = ref(false)
+  const error = ref(null)
+
+  const analyzeToken = async (tokenData) => {
+    isAnalyzing.value = true
+    error.value = null
+    analysis.value = null
+    
+    try {
+      // Prepare minimal data for AI to reduce token count
+      const payload = {
+         symbol: tokenData.symbol,
+         name: tokenData.name,
+         price: tokenData.price,
+         market_cap: tokenData.market_cap,
+         volume_24h: tokenData.volume_24h,
+         change_24h: tokenData.change_24h,
+         change_7d: tokenData.change_7d,
+         tvl: tokenData.tvl || 0,
+         trust_score: tokenData.trust_score
+      }
+      
+      const result = await api.analyzeToken(payload)
+      
+      if (result && result.analysis) {
+         analysis.value = result.analysis
+      } else if (result && result.status === 'success' && result.analysis) {
+         analysis.value = result.analysis
+      } else {
+         console.warn('AI response missing analysis field:', result)
+         error.value = "AI response was empty. Please check backend logs."
+      }
+    } catch (e) {
+      console.error('AI Analysis failed:', e)
+      error.value = "Failed to generate analysis. Please try again."
+    } finally {
+      isAnalyzing.value = false
+    }
+  }
+
+  const clearAnalysis = () => {
+    analysis.value = null
+    error.value = null
+  }
+
+  return {
+    analysis,
+    isAnalyzing,
+    error,
+    analyzeToken,
+    clearAnalysis
+  }
+}

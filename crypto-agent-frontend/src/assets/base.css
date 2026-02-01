@@ -1,0 +1,107 @@
+
+:root {
+  /* TokenInsight inspired Palette */
+  --bg-dark: #0f1115;
+  --bg-card: #181a20;
+  --bg-card-hover: #1e2026;
+
+  --primary: #2962ff; /* Corporate Blue */
+  --accent: #7c4dff; /* Deep Purple */
+
+  /* Rating Colors */
+  --rating-aaa: #00b574; /* Green */
+  --rating-aa: #00b574;
+  --rating-a: #84cc16; /* Lime */
+  --rating-b: #eab308; /* Yellow */
+  --rating-c: #f97316; /* Orange */
+  --rating-d: #ef4444; /* Red */
+
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+
+  --border-glass: rgba(255, 255, 255, 0.08);
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: "Inter", sans-serif;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Utilities */
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(15, 17, 21, 0.85); /* Darker, more solid */
+  backdrop-filter: blur(16px);       /* Stronger blur */
+  border: 1px solid rgba(255, 255, 255, 0.06); /* Subtler border */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); /* Deeper shadow */
+}
+
+.glass-card {
+  background: rgba(30, 32, 38, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease-in-out;
+}
+
+.glass-card:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom Scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+  width: max-content;
+}
+
+.hover\:pause:hover {
+  animation-play-state: paused;
+}
