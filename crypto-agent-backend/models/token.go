@@ -228,3 +228,20 @@ type CoinGeckoGlobalResponse struct {
 		MarketCapChangePercent float64            `json:"market_cap_change_percentage_24h_usd"`
 	} `json:"data"`
 }
+
+// CoinMarketCapGlobalResponse represents global metrics from CMC
+type CoinMarketCapGlobalResponse struct {
+	Data struct {
+		Quote struct {
+			USD struct {
+				TotalMarketCap       float64 `json:"total_market_cap"`
+				TotalVolume24h       float64 `json:"total_volume_24h"`
+				TotalMarketCapYest   float64 `json:"total_market_cap_yesterday"`
+				TotalVolume24hYest   float64 `json:"total_volume_24h_yesterday"`
+				TotalMarketCapChange float64 `json:"total_market_cap_yesterday_percentage_change"` // Calculated or estimated
+			} `json:"USD"`
+		} `json:"quote"`
+		BTCDominance float64 `json:"btc_dominance"`
+		ETHDominance float64 `json:"eth_dominance"`
+	} `json:"data"`
+}

@@ -152,7 +152,7 @@ func (h *TokenHandler) GetTokenByID(c *gin.Context) {
 // parseFilterParams extracts filter parameters from request
 func (h *TokenHandler) parseFilterParams(c *gin.Context) models.FilterParams {
 	params := models.FilterParams{
-		Limit: 50, // Default limit
+		Limit: 5000, // Default limit
 	}
 
 	// Min market cap
@@ -177,7 +177,7 @@ func (h *TokenHandler) parseFilterParams(c *gin.Context) models.FilterParams {
 	// Limit
 	if limit := c.Query("limit"); limit != "" {
 		if val, err := strconv.Atoi(limit); err == nil {
-			if val > 0 && val <= 2000 {
+			if val > 0 && val <= 5000 {
 				params.Limit = val
 			}
 		}

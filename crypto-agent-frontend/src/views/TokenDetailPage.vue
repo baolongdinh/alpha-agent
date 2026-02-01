@@ -131,10 +131,12 @@
             <div class="glass-bento p-10 text-center">
               <div class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] mb-10 text-left">Community Vibe</div>
               <div class="flex flex-col items-center justify-center py-4">
-                <SentimentGauge :score="displayToken.sentiment || 0" class="scale-125" />
+                <SentimentGauge :score="displayToken.sentiment !== undefined ? displayToken.sentiment : ((displayToken.trust_score || 50) / 100)" class="scale-125" />
                 <div class="mt-12 text-[11px] font-black text-gray-400 bg-white/5 px-6 py-3 rounded-2xl border border-white/5 flex items-center gap-3">
-                  <span class="w-2 h-2 rounded-full" :class="displayToken.sentiment >= 0 ? 'bg-green-400 shine' : 'bg-rose-400 shine'"></span>
-                  SENTIMENT SHIFT: <span :class="displayToken.sentiment >= 0 ? 'text-green-400' : 'text-rose-400'">{{ (displayToken.sentiment * 100).toFixed(1) }}% MATCH</span>
+                  <span class="w-2 h-2 rounded-full" :class="(displayToken.sentiment !== undefined ? displayToken.sentiment : ((displayToken.trust_score || 50) / 100)) >= 0.5 ? 'bg-green-400 shine' : 'bg-rose-400 shine'"></span>
+                  SENTIMENT SHIFT: <span :class="(displayToken.sentiment !== undefined ? displayToken.sentiment : ((displayToken.trust_score || 50) / 100)) >= 0.5 ? 'text-green-400' : 'text-rose-400'">
+                    {{ ((displayToken.sentiment !== undefined ? displayToken.sentiment : ((displayToken.trust_score || 50) / 100)) * 100).toFixed(1) }}% MATCH
+                  </span>
                 </div>
               </div>
             </div>
@@ -180,39 +182,50 @@
                    :progress="displayToken.market_cap > 0 ? Math.min((displayToken.volume_24h / displayToken.market_cap) * 200, 100) : 0"
                 />
                 <MetricCard 
-                  label="Peak Retracement" 
-                  :value="displayToken.ath_change ? displayToken.ath_change.toFixed(1) + '%' : '—'" 
-                  :change="displayToken.ath_change"
-                  icon="📉"
-                  :progress="Math.abs(displayToken.ath_change || 0)"
-                  progressColor="rose"
+                   label="Monthly Performance" 
+                   :value="displayToken.change_30d ? (displayToken.change_30d >= 0 ? '+' : '') + displayToken.change_30d.toFixed(1) + '%' : '—'" 
+                   :change="displayToken.change_30d"
+                   :isPositive="displayToken.change_30d >= 0"
+                   icon="�"
+                   subLabel="30-Day Trajectory"
+                   :progress="Math.min(Math.abs(displayToken.change_30d || 0), 100)"
+                   :progressColor="displayToken.change_30d >= 0 ? 'green' : 'rose'"
                 />
               </div>
             </div>
 
-            <!-- Section: Advanced On-Chain Health -->
+            <!-- Section: Advanced Market Dynamics -->
             <div class="space-y-4">
-              <h4 class="text-[10px] font-black text-amber-500/80 uppercase tracking-[0.4em] px-4">Protocol Vital Signs</h4>
+              <h4 class="text-[10px] font-black text-amber-500/80 uppercase tracking-[0.4em] px-4">Market Dynamics</h4>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 1. SENTIMENT SHIFT (Replaces Holders) -->
                 <MetricCard 
-                   label="Network Holders" 
-                   :value="displayToken.holder_count > 0 ? formatNumber(displayToken.holder_count) : 'SCANNED'" 
-                   icon="👥"
-                   subLabel="Verified Addresses"
+                   label="Sentiment Shift" 
+                   :value="((displayToken.trust_score || 50) > 60) ? 'BULLISH' : ((displayToken.trust_score || 50) < 40 ? 'BEARISH' : 'NEUTRAL')" 
+                   icon="🧠"
+                   :subLabel="`Confidence Score: ${displayToken.trust_score?.toFixed(0) || 50}/100`"
                    class="hover:border-amber-500/30 transition-all duration-500"
+                   :progress="displayToken.trust_score || 50"
+                   progressColor="amber"
                 />
+                
+                <!-- 2. LIQUIDITY TURNOVER (Replaces Liquidity) -->
                 <MetricCard 
-                   label="Depth / Liquidity" 
-                   :value="displayToken.liquidity > 0 ? formatCurrencyCompact(displayToken.liquidity) : 'LIMITED'" 
-                   icon="💧"
-                   :subLabel="displayToken.market_cap > 0 ? ((displayToken.liquidity / displayToken.market_cap) * 100).toFixed(2) + '% Ratio' : 'Liq Density'"
-                   :progress="displayToken.liquidity > 0 ? Math.min((displayToken.liquidity / displayToken.market_cap) * 1000, 100) : 0"
+                   label="Liquidity Turnover" 
+                   :value="displayToken.market_cap > 0 ? ((displayToken.volume_24h / displayToken.market_cap) * 100).toFixed(2) + '%' : '—'" 
+                   icon="🌊"
+                   :subLabel="((displayToken.volume_24h / displayToken.market_cap) > 0.1) ? 'High Velocity' : 'Standard Velocity'"
+                   :progress="displayToken.market_cap > 0 ? Math.min((displayToken.volume_24h / displayToken.market_cap) * 500, 100) : 0"
+                   progressColor="cyan"
                 />
+
+                <!-- 3. VOLATILITY INDEX (Replaces Revenue) -->
                 <MetricCard 
-                   label="Network Revenue" 
-                   :value="displayToken.revenue_30d > 0 ? formatCurrencyCompact(displayToken.revenue_30d) : 'EARLY PHASE'" 
-                   icon="💰"
-                   :subLabel="displayToken.ps_ratio > 0 ? 'P/S SCALE: ' + displayToken.ps_ratio.toFixed(1) : 'Fee Protocol'"
+                   label="Volatility Index" 
+                   :value="Math.abs(displayToken.change_30d || displayToken.change_7d || 0).toFixed(1) + '%'" 
+                   icon="📊"
+                   subLabel="30-Day Deviation"
+                   :progress="Math.min(Math.abs(displayToken.change_30d || displayToken.change_7d || 0), 100)"
                    progressColor="emerald"
                 />
               </div>
@@ -281,6 +294,46 @@
                          <div class="text-[11px] font-black text-primary bg-primary/20 px-4 py-2 rounded-xl border border-primary/30 tracking-[0.2em] font-mono shadow-lg">ZONE: {{ parsedAnalysis.recommendation.entry_zone }}</div>
                       </div>
                       <div class="pt-6 border-t border-white/10 text-xs text-gray-500 font-bold uppercase tracking-[0.3em]">Target Exit: <span class="text-white ml-2 text-sm">{{ parsedAnalysis.recommendation.target }}</span></div>
+                    </div>
+                  </div>
+
+                  <!-- Execution Plan (New) -->
+                  <div v-if="parsedAnalysis.trading_plan" class="glass-bento p-10 relative overflow-hidden group/plan">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-green-500/5 blur-[80px] rounded-full group-hover/plan:bg-green-500/10 transition-all duration-700"></div>
+                    <h4 class="text-[10px] font-black text-green-400 uppercase tracking-[0.4em] mb-8 relative z-10 flex items-center gap-3">
+                      <span class="w-1.5 h-1.5 rounded-full bg-green-400 shadow-glow"></span> Strategic Execution Plan
+                    </h4>
+                    
+                    <div class="grid md:grid-cols-4 gap-6 relative z-10 mb-8">
+                        <!-- Entry -->
+                        <div class="col-span-2 p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-green-500/30 transition-colors">
+                            <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-3">Accumulation Strategy</div>
+                            <div class="text-sm font-bold text-gray-200 leading-relaxed">{{ parsedAnalysis.trading_plan.buy_strategy }}</div>
+                        </div>
+
+                        <!-- Stop Loss -->
+                        <div class="p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-rose-500/30 transition-colors flex flex-col justify-center">
+                             <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Invalidation Level</div>
+                             <div class="text-xl font-black text-rose-400">{{ parsedAnalysis.trading_plan.stop_loss }}</div>
+                        </div>
+
+                        <!-- Timeframe -->
+                        <div class="p-6 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-center">
+                             <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Horizon</div>
+                             <div class="text-lg font-black text-white uppercase tracking-tight">{{ parsedAnalysis.trading_plan.time_horizon }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Take Profit Targets -->
+                    <div class="relative z-10">
+                        <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-4">Profit Realization Targets</div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div v-for="(target, idx) in parsedAnalysis.trading_plan.sell_targets" :key="idx" 
+                                 class="px-5 py-3 rounded-xl bg-gradient-to-r from-green-500/10 to-transparent border border-green-500/20 flex items-center gap-4 hover:bg-green-500/20 transition-all">
+                                <span class="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 font-black text-[10px] border border-green-500/30">{{ idx + 1 }}</span>
+                                <span class="font-bold text-green-100 text-sm">{{ target }}</span>
+                            </div>
+                        </div>
                     </div>
                   </div>
 

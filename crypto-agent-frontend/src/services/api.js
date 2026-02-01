@@ -33,7 +33,7 @@ export const api = {
       console.log('🌍 Fetching from Backend:', `${API_BASE_URL}/tokens`)
       const response = await axios.get(`${API_BASE_URL}/tokens`, {
          params: {
-             limit: 1000 // Increased limit to fetch more data
+             limit: 5000 // Match CMC's 2000 token limit
          }
       })
       

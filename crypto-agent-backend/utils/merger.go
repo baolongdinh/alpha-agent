@@ -14,6 +14,7 @@ func MergeEnhancedData(results map[string]interface{}) []models.Token {
 	if cmcData, ok := results["CoinMarketCap"].([]models.CoinMarketCapCoin); ok {
 		for _, coin := range cmcData {
 			symbol := NormalizeSymbol(coin.Symbol)
+
 			token := &models.Token{
 				ID:     coin.Slug,
 				Symbol: symbol,
@@ -32,6 +33,8 @@ func MergeEnhancedData(results map[string]interface{}) []models.Token {
 				Change1h:          coin.Quote.USD.PercentChange1h,
 				Change24h:         coin.Quote.USD.PercentChange24h,
 				Change7d:          coin.Quote.USD.PercentChange7d,
+				Change30d:         coin.Quote.USD.PercentChange30d,
+				Change90d:         coin.Quote.USD.PercentChange90d,
 				VolumeChange24h:   coin.Quote.USD.VolumeChange24h,
 				MaxSupply:         coin.MaxSupply,
 				CirculatingSupply: coin.CirculatingSupply,
@@ -44,82 +47,14 @@ func MergeEnhancedData(results map[string]interface{}) []models.Token {
 		}
 	}
 
-	// 2. CoinGecko - Fill gaps and provide images/sparklines (with robust matching)
-	if cgData, ok := results["CoinGecko"].([]models.CoinGeckoMarket); ok {
-		for _, cg := range cgData {
-			cgSymbol := NormalizeSymbol(cg.Symbol)
-			cgName := strings.ToLower(cg.Name)
-
-			// Find match in tokenMap
-			var matchedToken *models.Token
-
-			// 2a. Match by Symbol
-			if token, exists := tokenMap[cgSymbol]; exists {
-				matchedToken = token
-			} else {
-				// 2b. Match by Name (Fallback for different tickers)
-				for _, t := range tokenMap {
-					if strings.ToLower(t.Name) == cgName {
-						matchedToken = t
-						break
-					}
-				}
-			}
-
-			if matchedToken != nil {
-				if matchedToken.ID == "" {
-					matchedToken.ID = cg.ID
-				}
-				// Enrich existing token
-				if matchedToken.Image == "" {
-					matchedToken.Image = cg.Image
-				}
-				if len(matchedToken.Sparkline) == 0 {
-					matchedToken.Sparkline = cg.SparklineIn7d.Price
-				}
-				// If CMC didn't provide some metrics, use CG
-				if matchedToken.Ath == 0 {
-					matchedToken.Ath = cg.Ath
-					matchedToken.AthChange = cg.AthChangePercentage
-				}
-				if matchedToken.Change7d == 0 {
-					matchedToken.Change7d = cg.PriceChangePercentage7d
-				}
-				if matchedToken.MarketCapDom == 0 && cg.MarketCapRank > 0 {
-					matchedToken.MarketCapDom = 1.0 / float64(cg.MarketCapRank)
-				}
-				if matchedToken.CirculatingSupply == 0 {
-					matchedToken.CirculatingSupply = cg.CirculatingSupply
-					matchedToken.TotalSupply = cg.TotalSupply
-					matchedToken.MaxSupply = cg.MaxSupply
-				}
-				if matchedToken.FullyDilutedValue == 0 {
-					matchedToken.FullyDilutedValue = cg.FullyDilutedValuation
-				}
-			} else {
-				// Add token if missing from CMC (optional, but keep for coverage)
-				tokenMap[cgSymbol] = &models.Token{
-					ID:                cg.ID,
-					Symbol:            cgSymbol,
-					Name:              cg.Name,
-					Image:             cg.Image,
-					Rank:              cg.MarketCapRank,
-					Price:             cg.CurrentPrice,
-					MarketCap:         cg.MarketCap,
-					Volume24h:         cg.TotalVolume,
-					Change24h:         cg.PriceChangePercentage24h,
-					Change7d:          cg.PriceChangePercentage7d,
-					Sparkline:         cg.SparklineIn7d.Price,
-					Ath:               cg.Ath,
-					AthChange:         cg.AthChangePercentage,
-					CirculatingSupply: cg.CirculatingSupply,
-					TotalSupply:       cg.TotalSupply,
-					MaxSupply:         cg.MaxSupply,
-					FullyDilutedValue: cg.FullyDilutedValuation,
-				}
+	// 2. CoinGecko - Disabled due to rate limits
+	/*
+		if cgData, ok := results["CoinGecko"].([]models.CoinGeckoMarket); ok {
+			for _, cg := range cgData {
+				// ... logic removed ...
 			}
 		}
-	}
+	*/
 
 	// 3. DeFiLlama - TVL and Categories
 	if defiData, ok := results["DeFiLlama"].([]models.DefiLlamaProtocol); ok {
@@ -205,6 +140,7 @@ func MergeEnhancedData(results map[string]interface{}) []models.Token {
 			tokens = append(tokens, *token)
 		}
 	}
+
 	return tokens
 }
 

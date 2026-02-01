@@ -4,7 +4,7 @@
     <div class="absolute -top-12 -right-12 w-24 h-24 bg-primary/10 blur-3xl rounded-full group-hover:bg-primary/20 transition-all duration-700"></div>
 
     <!-- Icon Background -->
-    <div class="absolute top-6 right-6 text-3xl opacity-10 group-hover:opacity-30 transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-6">
+    <div class="absolute top-6 right-6 text-3xl opacity-40 group-hover:opacity-80 transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-6 grayscale-[50%] group-hover:grayscale-0">
       {{ icon }}
     </div>
 

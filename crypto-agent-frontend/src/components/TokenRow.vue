@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="table-row animate-fade-in group active:scale-[0.99] transition-transform duration-100 ease-out cursor-pointer"
+    class="block animate-fade-in group active:scale-[0.99] transition-transform duration-100 ease-out cursor-pointer"
     @click="router.push(`/token/${token.id}`)"
   >
     <div class="grid grid-cols-12 gap-4 items-center py-4 px-6 relative z-10">

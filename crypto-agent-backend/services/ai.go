@@ -75,48 +75,67 @@ func (s *AIService) AnalyzeToken(ctx context.Context, req models.AnalysisRequest
 
 // buildAnalysisPrompt creates a structured prompt for Gemini to return JSON
 func (s *AIService) buildAnalysisPrompt(req models.AnalysisRequest) string {
-	return fmt.Sprintf(`Bạn là hệ thống AI phân tích AlphaAgent, chuyên gia phân tích on-chain và thị trường cryptocurrency.
+	return fmt.Sprintf(`Bạn là AlphaAgent - Hệ thống AI phân tích thị trường Crypto chuyên sâu. Nhiệm vụ của bạn là đóng vai một chuyên gia giao dịch (Trader/Analyst) kỳ cựu để phân tích token sau và đưa ra chiến lược giao dịch cụ thể.
 
-Hãy phân tích token sau dựa trên dữ liệu hiện có và trả về một đối tượng JSON duy nhất theo cấu trúc sau:
+Dựa trên dữ liệu thị trường được cung cấp, hãy phân tích và trả về kết quả dưới dạng JSON (Tuyệt đối không kèm text dẫn nhập):
+
 {
-  "summary": "Tóm tắt ngắn gọn trạng thái hiện tại (1 câu)",
+  "summary": "Nhận định tổng quan sắc bén về trạng thái token (dưới 30 từ)",
   "growth_potential": {
-    "score": (số từ 0-100),
-    "reason": "Lý do cho điểm số này"
+    "score": (số 0-100),
+    "reason": "Lý do cốt lõi cho điểm số này"
   },
   "technical_analysis": {
-    "trend": "Trạng thái xu hướng (Bullish/Neutral/Bearish)",
-    "strength": "Sức mạnh xu hướng (Strong/Weak)"
+    "trend": "Xu hướng chính (Uptrend/Downtrend/Accumulation/Distribution)",
+    "strength": "Độ mạnh xu hướng (Very Strong/Strong/Weak/Neutral)",
+    "key_levels": "Hỗ trợ quan trọng và Kháng cự gần nhất"
   },
   "risk_analysis": {
-    "level": "Mức độ rủi ro (Low/Medium/High)",
-    "concerns": ["Điểm đáng lo ngại 1", "Điểm đáng lo ngại 2"]
+    "level": "Rủi ro (Low/Medium/High/Extreme)",
+    "concerns": ["Rủi ro 1 (ngắn gọn)", "Rủi ro 2"]
   },
   "recommendation": {
-    "action": "Hành động khuyến nghị (Buy/Hold/Sell/Watch)",
-    "entry_zone": "Vùng giá entry đề xuất",
-    "target": "Mục tiêu kỳ vọng"
+    "action": "ACTION (MUA NGAY / CANH MUA / HOLD / BÁN / QUAN SÁT)",
+    "entry_zone": "Vùng giá mua tối ưu (cụ thể)",
+    "target": "Mục tiêu giá chính"
   },
-  "insights": ["Insight đặc biệt về holder/liquidity", "Insight về biến động thị trường"]
+  "trading_plan": {
+    "buy_strategy": "Chiến lược mua chi tiết (VD: DCA tại vùng A và B, hoặc Breakout C)",
+    "sell_targets": ["TP1: $Giá (Mô tả nhẹ)", "TP2: $Giá", "TP3: $Giá (Moonbag)"],
+    "stop_loss": "Giá cắt lỗ (hoặc điều kiện invalid)",
+    "time_horizon": "Khung thời gian (Ngắn hạn/Trung hạn/Dài hạn)"
+  },
+  "insights": [
+    "Insight 1: Phân tích về Liquidity/Volume so với Mcap (Velocity)",
+    "Insight 2: Biến động giá 30d/90d nói lên điều gì về dòng tiền",
+    "Insight 3: So sánh tương quan với thị trường chung (Beta)"
+  ]
 }
 
-**Thông tin token:**
-- Tên: %s (%s) | Rank: #%d
-- Giá: $%.2f | Biến động: 24h: %.2f%%, 7d: %.2f%%
-- Market Cap: $%.2f | FDV: (Tỷ lệ Circulating/Max supply: %.1f%% / %.1f%%)
-- Volume 24h: $%.2f | Liquidity: $%.2f
-- TVL: $%.2f | Holder Count: %d
-- Alpha Score: %.1f/100
+**DỮ LIỆU ĐẦU VÀO:**
+- Token: %s (%s) | Rank: #%d
+- Giá hiện tại: $%.6f
+- Biến động: 24h: %.2f%% | 7d: %.2f%%
+- Xu hướng trung hạn: 30d: %.2f%% | 90d: %.2f%%
+- Vốn hóa (Mcap): $%.2f | Định giá pha loãng (FDV): $%.2f
+- Cung: Circulating %.1f%% / Max Supply
+- Volume 24h: $%.2f (Tỷ lệ Vol/Mcap: %.4f)
+- Liquidity: $%.2f | TVL: $%.2f
+- Alpha Trust Score: %.1f/100
 
-**Yêu cầu:**
-- Trả lời bằng tiếng Việt.
-- CHỈ TRẢ VỀ JSON, không thêm văn bản giải thích nào khác.
-- Đảm bảo JSON hợp lệ.`,
+**LƯU Ý QUAN TRỌNG:**
+1. Nếu Liquidity/Mcap thấp (<1%%), cảnh báo rủi ro thanh khoản.
+2. Nếu FDV >> Mcap, cảnh báo lạm phát token.
+3. Đưa ra các mốc giá (TP/SL) phải dựa trên biến động giá (Change 7d/30d) và mức giá hiện tại, hãy ước lượng hỗ trợ/kháng cự một cách hợp lý.
+4. Trả lời hoàn toàn bằng tiếng Việt chuyên ngành Crypto.`,
 		req.Name, req.Symbol, req.Rank,
-		req.Price, req.Change24h, req.Change7d,
-		req.MarketCap, req.CirculatingSupply, req.MaxSupply,
-		req.Volume24h, req.Liquidity,
-		req.TVL, req.HolderCount,
+		req.Price,
+		req.Change24h, req.Change7d,
+		req.Change30d, req.Change90d,
+		req.MarketCap, req.Price*req.TotalSupply,
+		(req.CirculatingSupply/req.MaxSupply)*100,
+		req.Volume24h, req.Volume24h/req.MarketCap,
+		req.Liquidity, req.TVL,
 		req.TrustScore,
 	)
 }

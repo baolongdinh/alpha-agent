@@ -37,6 +37,9 @@ type AnalysisRequest struct {
 	HolderCount       int     `json:"holder_count"`
 	CirculatingSupply float64 `json:"circulating_supply"`
 	MaxSupply         float64 `json:"max_supply"`
+	TotalSupply       float64 `json:"total_supply"`
+	Change30d         float64 `json:"change_30d"`
+	Change90d         float64 `json:"change_90d"`
 }
 
 // AnalysisResponse is the response for /api/analyze endpoint

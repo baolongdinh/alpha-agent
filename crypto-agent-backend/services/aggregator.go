@@ -53,7 +53,7 @@ func (a *Aggregator) FetchAllTokenData(ctx context.Context) ([]models.Token, err
 		fn   func(context.Context) (interface{}, error)
 	}{
 		{"CoinMarketCap", a.fetchCoinMarketCap},
-		{"CoinGecko", a.fetchCoinGeckoAsync},
+		// {"CoinGecko", a.fetchCoinGeckoAsync}, // Disabled due to rate limits
 		{"DeFiLlama", a.fetchDefiLlamaAsync},
 		{"DexScreener", a.fetchDexScreenerAsync},
 		{"Messari", a.fetchMessari},
@@ -103,7 +103,7 @@ func (a *Aggregator) fetchCoinMarketCap(ctx context.Context) (interface{}, error
 		return nil, nil // Silently skip if no key
 	}
 	// Removed aux=sparkline to restore 2000 token limit compatibility on free tier
-	url := fmt.Sprintf("%s/v1/cryptocurrency/listings/latest?limit=2000", a.config.CoinMarketCapAPIURL)
+	url := fmt.Sprintf("%s/v1/cryptocurrency/listings/latest?limit=3000", a.config.CoinMarketCapAPIURL)
 	headers := map[string]string{"X-CMC_PRO_API_KEY": a.config.CoinMarketCapAPIKey}
 
 	data, err := utils.FetchJSONWithHeaders(url, headers)
@@ -114,6 +114,7 @@ func (a *Aggregator) fetchCoinMarketCap(ctx context.Context) (interface{}, error
 	if err := json.Unmarshal(data, &resp); err != nil {
 		return nil, err
 	}
+
 	return resp.Data, nil
 }
 
@@ -199,23 +200,40 @@ func (a *Aggregator) FetchGlobalMarketStats(ctx context.Context) (*models.Market
 	if cached, found := a.cache.Get("global_stats"); found {
 		return cached.(*models.MarketStats), nil
 	}
-	url := fmt.Sprintf("%s/global", a.config.CoinGeckoAPIURL)
-	data, err := utils.FetchJSON(url)
+
+	// Use CoinMarketCap Global Metrics
+	if a.config.CoinMarketCapAPIKey == "" {
+		return nil, fmt.Errorf("CMC API key required for global stats")
+	}
+
+	url := fmt.Sprintf("%s/v1/global-metrics/quotes/latest", a.config.CoinMarketCapAPIURL)
+	headers := map[string]string{"X-CMC_PRO_API_KEY": a.config.CoinMarketCapAPIKey}
+
+	data, err := utils.FetchJSONWithHeaders(url, headers)
 	if err != nil {
 		return nil, err
 	}
-	var response models.CoinGeckoGlobalResponse
+
+	var response models.CoinMarketCapGlobalResponse
 	if err := json.Unmarshal(data, &response); err != nil {
 		return nil, err
 	}
-	stats := &models.MarketStats{
-		TotalMarketCap:      response.Data.TotalMarketCap["usd"],
-		TotalVolume:         response.Data.TotalVolume["usd"],
-		MarketCapPercentage: response.Data.MarketCapPercentage,
-		MarketCapChange24h:  response.Data.MarketCapChangePercent,
-		BTCDominance:        response.Data.MarketCapPercentage["btc"],
-		ETHDominance:        response.Data.MarketCapPercentage["eth"],
+
+	// Calculate 24h Change (Estimated from yesterday's cap if available, or 0)
+	var change24h float64
+	if response.Data.Quote.USD.TotalMarketCapYest > 0 {
+		change24h = ((response.Data.Quote.USD.TotalMarketCap - response.Data.Quote.USD.TotalMarketCapYest) / response.Data.Quote.USD.TotalMarketCapYest) * 100
 	}
+
+	stats := &models.MarketStats{
+		TotalMarketCap:      response.Data.Quote.USD.TotalMarketCap,
+		TotalVolume:         response.Data.Quote.USD.TotalVolume24h,
+		MarketCapPercentage: map[string]float64{"btc": response.Data.BTCDominance, "eth": response.Data.ETHDominance},
+		MarketCapChange24h:  change24h,
+		BTCDominance:        response.Data.BTCDominance,
+		ETHDominance:        response.Data.ETHDominance,
+	}
+
 	a.cache.Set("global_stats", stats, 10*time.Minute)
 	return stats, nil
 }

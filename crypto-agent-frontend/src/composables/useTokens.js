@@ -13,7 +13,7 @@ const filters = ref({
   minMcap: null,
   maxMcap: null,
   category: '',
-  limit: 1000,
+  limit: 5000,
 })
 
 const marketStats = ref(null)
@@ -100,7 +100,7 @@ export function useTokens() {
       minMcap: null,
       maxMcap: null,
       category: '',
-      limit: 50,
+      limit: 5000,
     }
     fetchTokens()
   }
