@@ -359,7 +359,7 @@
                      class="group relative px-20 py-8 rounded-[32px] bg-white text-black font-black text-sm uppercase tracking-[0.5em] transition-all hover:scale-105 active:scale-95 shadow-[0_25px_60px_rgba(255,255,255,0.2)] overflow-hidden"
                    >
                      <div class="absolute inset-0 bg-gradient-to-r from-primary to-indigo-600 opacity-0 group-hover:opacity-20 transition-opacity"></div>
-                     <span class="relative z-10">Launch Protocol</span>
+                     <span class="relative z-10">Analyze With AI</span>
                    </button>
                 </div>
              </div>
