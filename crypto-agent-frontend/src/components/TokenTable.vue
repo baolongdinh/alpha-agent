@@ -86,28 +86,13 @@
             v-for="token in sortedTokens"
             :key="token.symbol"
             :token="token"
-            @click="openTokenDetail"
             class="hover:bg-white/5 transition-colors cursor-pointer"
           />
         </div>
       </div>
     </div>
 
-    <!-- Token Detail Modal -->
-    <Transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0 translate-y-4"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-4"
-    >
-      <TokenDetailModal
-        v-if="selectedToken"
-        :token="selectedToken"
-        @close="closeTokenDetail"
-      />
-    </Transition>
+
   </div>
 </template>
 
@@ -116,7 +101,6 @@ import { ref, onMounted, computed } from 'vue'
 import FilterBar from './FilterBar.vue'
 import LoadingSkeleton from './LoadingSkeleton.vue'
 import TokenRow from './TokenRow.vue'
-import TokenDetailModal from './TokenDetailModal.vue'
 import { useTokens } from '../composables/useTokens'
 import { useWatchlist } from '../composables/useWatchlist'
 import { timeAgo } from '../utils/formatters'
@@ -134,8 +118,6 @@ const {
   resetFilters,
   refresh
 } = useTokens()
-
-const selectedToken = ref(null)
 
 // Sorting State
 const sortField = ref('rank') // Default sort by rank
@@ -192,14 +174,6 @@ const sortedTokens = computed(() => {
     return sortDesc.value ? -comparison : comparison
   })
 })
-
-const openTokenDetail = (token) => {
-  selectedToken.value = token
-}
-
-const closeTokenDetail = () => {
-  selectedToken.value = null
-}
 
 // Fetch tokens on mount
 onMounted(() => {

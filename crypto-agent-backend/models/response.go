@@ -23,15 +23,20 @@ type TokensResponse struct {
 
 // AnalysisRequest is the request body for /api/analyze endpoint
 type AnalysisRequest struct {
-	Symbol     string  `json:"symbol" binding:"required"`
-	Name       string  `json:"name" binding:"required"`
-	Price      float64 `json:"price"`
-	MarketCap  float64 `json:"market_cap"`
-	Volume24h  float64 `json:"volume_24h"`
-	TVL        float64 `json:"tvl"`
-	TrustScore float64 `json:"trust_score"`
-	Change24h  float64 `json:"change_24h"`
-	Change7d   float64 `json:"change_7d"`
+	Symbol            string  `json:"symbol" binding:"required"`
+	Name              string  `json:"name" binding:"required"`
+	Price             float64 `json:"price"`
+	MarketCap         float64 `json:"market_cap"`
+	Volume24h         float64 `json:"volume_24h"`
+	TVL               float64 `json:"tvl"`
+	TrustScore        float64 `json:"trust_score"`
+	Change24h         float64 `json:"change_24h"`
+	Change7d          float64 `json:"change_7d"`
+	Liquidity         float64 `json:"liquidity"`
+	Rank              int     `json:"rank"`
+	HolderCount       int     `json:"holder_count"`
+	CirculatingSupply float64 `json:"circulating_supply"`
+	MaxSupply         float64 `json:"max_supply"`
 }
 
 // AnalysisResponse is the response for /api/analyze endpoint

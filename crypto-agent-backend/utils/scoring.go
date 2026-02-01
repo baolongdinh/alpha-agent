@@ -9,11 +9,12 @@ import (
 func CalculateTrustScore(token *models.Token) {
 	// 1. Weights
 	const (
-		WLiq    = 25.0
-		WVol    = 20.0
-		WTVL    = 20.0
-		WTrend  = 20.0
-		WMarket = 10.0
+		WLiq    = 20.0
+		WVol    = 15.0
+		WTVL    = 15.0
+		WTrend  = 15.0
+		WMarket = 15.0
+		WSocial = 15.0
 		WRisk   = 5.0
 	)
 
@@ -23,21 +24,24 @@ func CalculateTrustScore(token *models.Token) {
 	tScore := calculateTVLScore(token)
 	trendScore := calculateTrendScore(token)
 	mScore := calculateMarketHealthScore(token)
+	sScore := calculateSocialScore(token)
 	rScore := calculateRiskScore(token)
 
 	// 3. Dynamic Weighting (Handle missing TVL/Liq)
-	wLiq, wVol, wTVL, wTrend, wMarket, wRisk := WLiq, WVol, WTVL, WTrend, WMarket, WRisk
+	wLiq, wVol, wTVL, wTrend, wMarket, wSocial, wRisk := WLiq, WVol, WTVL, WTrend, WMarket, WSocial, WRisk
 
 	if token.TVL == 0 {
 		wTVL = 0
-		wVol += WTVL * 0.4
-		wTrend += WTVL * 0.4
+		wVol += WTVL * 0.3
+		wTrend += WTVL * 0.3
 		wMarket += WTVL * 0.2
+		wSocial += WTVL * 0.2
 	}
 	if token.Liquidity == 0 {
 		wLiq = 0
-		wVol += WLiq * 0.6
-		wRisk += WLiq * 0.4
+		wVol += WLiq * 0.5
+		wSocial += WLiq * 0.3
+		wRisk += WLiq * 0.2
 	}
 
 	// 4. Final Weighted Total
@@ -46,6 +50,7 @@ func CalculateTrustScore(token *models.Token) {
 		(tScore/100.0)*wTVL +
 		(trendScore/100.0)*wTrend +
 		(mScore/100.0)*wMarket +
+		(sScore/100.0)*wSocial +
 		(rScore/100.0)*wRisk
 
 	// 5. Rank Boost
@@ -69,6 +74,7 @@ func CalculateTrustScore(token *models.Token) {
 		TVLScore:          tScore,
 		TrendScore:        trendScore,
 		MarketHealthScore: mScore,
+		SocialScore:       sScore,
 		RiskScore:         rScore,
 		Grade:             AssignGrade(totalScore),
 	}
@@ -185,4 +191,29 @@ func calculateRiskScore(token *models.Token) float64 {
 		score -= 20
 	}
 	return math.Min(math.Max(score, 0), 100)
+}
+
+func calculateSocialScore(token *models.Token) float64 {
+	// Base score from market dominance (logarithmic scale)
+	domScore := 0.0
+	if token.MarketCapDom > 0 {
+		// Log scale: 0.01% -> ~40, 0.1% -> ~60, 1% -> ~80, 10% -> 100
+		domScore = 60 + 20*math.Log10(math.Max(token.MarketCapDom, 0.01)*10)
+	} else {
+		domScore = 40.0 // Minimum base for existing tokens
+	}
+
+	// Sentiment adjustment (-1 to 1)
+	sentimentBonus := token.Sentiment * 15.0
+
+	// Combined score
+	finalScore := domScore + sentimentBonus
+
+	// LunarCrush SocialScore fallback/bonus
+	if token.SocialScore > 0 {
+		// Normalize LunarCrush score (often 0-100)
+		finalScore = (finalScore + token.SocialScore) / 2
+	}
+
+	return math.Min(math.Max(finalScore, 0), 100)
 }

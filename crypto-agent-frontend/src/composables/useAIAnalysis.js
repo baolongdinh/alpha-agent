@@ -22,7 +22,12 @@ export function useAIAnalysis() {
          change_24h: tokenData.change_24h,
          change_7d: tokenData.change_7d,
          tvl: tokenData.tvl || 0,
-         trust_score: tokenData.trust_score
+         trust_score: tokenData.trust_score,
+         liquidity: tokenData.liquidity || 0,
+         rank: tokenData.rank || 0,
+         holder_count: tokenData.holder_count || 0,
+         circulating_supply: tokenData.circulating_supply || 0,
+         max_supply: tokenData.max_supply || 0
       }
       
       const result = await api.analyzeToken(payload)

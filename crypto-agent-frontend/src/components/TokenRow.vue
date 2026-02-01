@@ -1,7 +1,7 @@
 <template>
   <div 
-    class="table-row animate-fade-in group active:scale-[0.99] transition-transform duration-100 ease-out"
-    @click="$emit('click', token)"
+    class="table-row animate-fade-in group active:scale-[0.99] transition-transform duration-100 ease-out cursor-pointer"
+    @click="router.push(`/token/${token.id}`)"
   >
     <div class="grid grid-cols-12 gap-4 items-center py-4 px-6 relative z-10">
       <!-- Rank & Star -->
@@ -75,11 +75,13 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import RatingBadge from './RatingBadge.vue'
 import SparklineChart from './SparklineChart.vue'
 import { formatNumber, formatCurrency } from '../utils/formatters'
 import { useWatchlist } from '../composables/useWatchlist'
 
+const router = useRouter()
 const { isFavorite, toggleFavorite } = useWatchlist()
 
 defineProps({
@@ -88,8 +90,6 @@ defineProps({
     required: true
   }
 })
-
-defineEmits(['click'])
 
 const getScoreColor = (score) => {
   if (score >= 70) return 'var(--rating-aaa)' // Green

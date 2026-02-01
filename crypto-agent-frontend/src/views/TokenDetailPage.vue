@@ -1,6 +1,7 @@
 <template>
-  <Modal @close="$emit('close')">
-    <div class="p-0 overflow-hidden bg-[#0a0b0f] max-w-7xl w-full mx-auto rounded-[32px] shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 flex flex-col max-h-[95vh] relative text-gray-300">
+  <div class="min-h-screen bg-[#050510]">
+    <!-- Full Page Container -->
+    <div class="p-0 overflow-hidden bg-[#0a0b0f] w-full mx-auto flex flex-col min-h-screen relative text-gray-300">
       
       <!-- HERO HEADER SECTION -->
       <div class="relative p-10 pb-16 overflow-hidden">
@@ -8,8 +9,10 @@
         <div class="absolute inset-0 bg-gradient-to-br from-[#1a1c24] via-[#0a0b10] to-[#050608] z-0"></div>
         <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2 z-0 animate-pulse"></div>
         
-        <button @click="$emit('close')" class="absolute top-8 right-8 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all z-20 hover:scale-110 active:scale-95 group">
-          <svg class="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+        <!-- Back Button -->
+        <button @click="$router.push('/')" class="absolute top-8 left-8 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all z-20 hover:scale-110 active:scale-95 group flex items-center gap-2">
+          <svg class="w-6 h-6 group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+          <span class="text-sm font-bold uppercase tracking-wider">Back</span>
         </button>
 
         <div v-if="displayToken && displayToken.symbol" class="relative z-10">
@@ -368,17 +371,16 @@
         </div>
       </div>
     </div>
-  </Modal>
+  </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import Modal from './Modal.vue'
-import RatingBadge from './RatingBadge.vue'
-import ScoreRadar from './ScoreRadar.vue'
-import MetricCard from './MetricCard.vue'
-import SentimentGauge from './SentimentGauge.vue'
-import SparklineChart from './SparklineChart.vue'
+import { useRoute } from 'vue-router'
+import RatingBadge from '../components/RatingBadge.vue'
+import ScoreRadar from '../components/ScoreRadar.vue'
+import MetricCard from '../components/MetricCard.vue'
+import SentimentGauge from '../components/SentimentGauge.vue'
 import { formatCurrency, formatPrice, formatNumber } from '../utils/formatters'
 import { formatCurrencyCompact } from '../services/api'
 import { useTokens } from '../composables/useTokens'
@@ -386,15 +388,7 @@ import { useAIAnalysis } from '../composables/useAIAnalysis'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
-const props = defineProps({
-  token: {
-    type: Object,
-    required: true
-  }
-})
-
-defineEmits(['close'])
-
+const route = useRoute()
 const { fetchTokenDetail } = useTokens()
 const { analysis, isAnalyzing, error: aiError, analyzeToken, clearAnalysis } = useAIAnalysis()
 
@@ -437,15 +431,17 @@ const riskClass = computed(() => {
 
 // Merge list data with detailed data
 const displayToken = computed(() => {
-  return { ...props.token, ...detailData.value }
+  return { ...detailData.value }
 })
 
 onMounted(async () => {
   clearAnalysis() // Clear previous analysis
-  if (props.token.id) {
+  const tokenId = route.params.id
+  
+  if (tokenId) {
     isLoading.value = true
     try {
-      const data = await fetchTokenDetail(props.token.id)
+      const data = await fetchTokenDetail(tokenId)
       if (data) {
         detailData.value = data
       }

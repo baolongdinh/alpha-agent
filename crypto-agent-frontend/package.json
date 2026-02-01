@@ -15,7 +15,8 @@
     "dompurify": "^3.0.0",
     "marked": "^11.0.0",
     "vue": "^3.4.0",
-    "vue-chartjs": "^5.3.3"
+    "vue-chartjs": "^5.3.3",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",

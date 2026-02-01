@@ -6,6 +6,7 @@ import (
 	"crypto-agent-backend/models"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
@@ -60,51 +61,63 @@ func (s *AIService) AnalyzeToken(ctx context.Context, req models.AnalysisRequest
 		return "", fmt.Errorf("empty response from AI")
 	}
 
-	// Log response details for debugging
-	log.Printf("📊 Response candidates: %d", len(resp.Candidates))
-	log.Printf("📊 Response parts: %d", len(resp.Candidates[0].Content.Parts))
-
 	analysis := fmt.Sprintf("%v", resp.Candidates[0].Content.Parts[0])
 
-	log.Printf("✅ AI analysis generated for %s (%d chars)", req.Symbol, len(analysis))
-	log.Printf("📝 Full response: %s", analysis) // Log full response
+	// Clean up markdown code blocks if present
+	analysis = strings.TrimPrefix(analysis, "```json")
+	analysis = strings.TrimPrefix(analysis, "```")
+	analysis = strings.TrimSuffix(analysis, "```")
+	analysis = strings.TrimSpace(analysis)
 
+	log.Printf("✅ AI analysis generated for %s", req.Symbol)
 	return analysis, nil
 }
 
-// buildAnalysisPrompt creates a detailed prompt for Gemini
+// buildAnalysisPrompt creates a structured prompt for Gemini to return JSON
 func (s *AIService) buildAnalysisPrompt(req models.AnalysisRequest) string {
-	return fmt.Sprintf(`Bạn là hệ thống AI phân tích của dự án AlphaAgent, một chuyên gia phân tích cryptocurrency chuyên sâu.
+	return fmt.Sprintf(`Bạn là hệ thống AI phân tích AlphaAgent, chuyên gia phân tích on-chain và thị trường cryptocurrency.
 
-Hãy phân tích token sau và đưa ra nhận định ngắn gọn (tối đa 200 từ) về:
-1. **Tiềm năng tăng trưởng**: Phân tích dựa trên các chỉ số
-2. **Rủi ro cần lưu ý**: Những điểm đáng lo ngại
-3. **Khuyến nghị**: Lời khuyên cho nhà đầu tư
+Hãy phân tích token sau dựa trên dữ liệu hiện có và trả về một đối tượng JSON duy nhất theo cấu trúc sau:
+{
+  "summary": "Tóm tắt ngắn gọn trạng thái hiện tại (1 câu)",
+  "growth_potential": {
+    "score": (số từ 0-100),
+    "reason": "Lý do cho điểm số này"
+  },
+  "technical_analysis": {
+    "trend": "Trạng thái xu hướng (Bullish/Neutral/Bearish)",
+    "strength": "Sức mạnh xu hướng (Strong/Weak)"
+  },
+  "risk_analysis": {
+    "level": "Mức độ rủi ro (Low/Medium/High)",
+    "concerns": ["Điểm đáng lo ngại 1", "Điểm đáng lo ngại 2"]
+  },
+  "recommendation": {
+    "action": "Hành động khuyến nghị (Buy/Hold/Sell/Watch)",
+    "entry_zone": "Vùng giá entry đề xuất",
+    "target": "Mục tiêu kỳ vọng"
+  },
+  "insights": ["Insight đặc biệt về holder/liquidity", "Insight về biến động thị trường"]
+}
 
 **Thông tin token:**
-- Tên: %s (%s)
-- Giá hiện tại: $%.2f
-- Market Cap: $%.2f
-- Volume 24h: $%.2f
-- TVL: $%.2f
-- Trust Score: %.1f/100
-- Biến động 24h: %.2f%%
-- Biến động 7d: %.2f%%
+- Tên: %s (%s) | Rank: #%d
+- Giá: $%.2f | Biến động: 24h: %.2f%%, 7d: %.2f%%
+- Market Cap: $%.2f | FDV: (Tỷ lệ Circulating/Max supply: %.1f%% / %.1f%%)
+- Volume 24h: $%.2f | Liquidity: $%.2f
+- TVL: $%.2f | Holder Count: %d
+- Alpha Score: %.1f/100
 
 **Yêu cầu:**
-- Trả lời bằng tiếng Việt
-- Sử dụng markdown formatting với headers, bold, bullet points
-- Ngắn gọn, súc tích, dễ hiểu
-- Tập trung vào insights thực tế`,
-		req.Name,
-		req.Symbol,
-		req.Price,
-		req.MarketCap,
-		req.Volume24h,
-		req.TVL,
+- Trả lời bằng tiếng Việt.
+- CHỈ TRẢ VỀ JSON, không thêm văn bản giải thích nào khác.
+- Đảm bảo JSON hợp lệ.`,
+		req.Name, req.Symbol, req.Rank,
+		req.Price, req.Change24h, req.Change7d,
+		req.MarketCap, req.CirculatingSupply, req.MaxSupply,
+		req.Volume24h, req.Liquidity,
+		req.TVL, req.HolderCount,
 		req.TrustScore,
-		req.Change24h,
-		req.Change7d,
 	)
 }
 

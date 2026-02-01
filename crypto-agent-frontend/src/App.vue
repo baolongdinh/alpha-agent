@@ -4,14 +4,14 @@
     <header class="sticky top-0 z-40 w-full glass-panel border-b border-white/5 backdrop-blur-xl">
       <div class="container mx-auto px-4 h-16 flex items-center justify-between">
         <!-- Logo -->
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-cyan-500 flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20">
+        <router-link to="/" class="flex items-center gap-2 group">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-cyan-500 flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
             AA
           </div>
           <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 tracking-tight">
             AlphaAgent
           </span>
-        </div>
+        </router-link>
 
         <div class="flex items-center gap-4">
            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 transition-all duration-300">
@@ -58,46 +58,22 @@
       </div>
     </div>
 
-    <!-- Main Layout -->
-    <div class="container mx-auto px-4 py-8">
-      <div class="grid grid-cols-12 gap-8">
-        <!-- Main Content -->
-        <main class="col-span-12 xl:col-span-10 xl:col-start-2">
-          <!-- Page Header -->
-          <div class="mb-8 flex justify-between items-end border-b border-white/5 pb-6">
-            <div>
-              <h1 class="text-4xl font-black text-white mb-2 tracking-tighter">Market Pulse</h1>
-              <p class="text-gray-500 text-sm font-medium">Proprietary AI scoring for cross-chain liquidity & token health.</p>
-            </div>
-            <div class="text-right hidden sm:block">
-               <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Last Data Sync</div>
-               <div class="text-xs text-white font-mono">{{ lastFetch ? lastFetch.toLocaleTimeString() : 'connecting...' }}</div>
-            </div>
-          </div>
-
-          <TokenTable />
-        </main>
-      </div>
-    </div>
+    <!-- Main Layout - Router View -->
+    <router-view />
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
-import TokenTable from './components/TokenTable.vue'
+import { onMounted } from 'vue'
 import { useTokens } from './composables/useTokens'
 import { formatPrice } from './utils/formatters'
 import { formatCurrencyCompact } from './services/api'
 
-const { refresh: refreshTokens, marketStats, topTokens, hasTokens, lastFetch, loading } = useTokens()
+const { refresh: refreshTokens, marketStats, topTokens, hasTokens, loading } = useTokens()
 
 onMounted(() => {
   console.log('🚀 AlphaAgent initialized')
   refreshTokens() // Initial fetch only
-})
-
-onUnmounted(() => {
-  if (timer) clearInterval(timer)
 })
 </script>
 

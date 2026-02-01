@@ -8,6 +8,7 @@ type DetailedScoreBreakdown struct {
 	TVLScore          float64 `json:"tvl_score"`           // 20%
 	TrendScore        float64 `json:"trend_score"`         // 20%
 	MarketHealthScore float64 `json:"market_health_score"` // 10%
+	SocialScore       float64 `json:"social_score"`        // NEW: 10%
 	RiskScore         float64 `json:"risk_score"`          // 5%
 
 	// Overall
