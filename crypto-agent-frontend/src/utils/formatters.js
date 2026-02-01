@@ -44,6 +44,22 @@ export function formatCurrency(num) {
 }
 
 /**
+ * Format currency with compact notation (e.g. $1.2M)
+ * @param {number} num - Number to format
+ * @returns {string} Formatted compact currency
+ */
+export function formatCurrencyCompact(num) {
+  if (!num || num === 0) return '$0'
+  
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    notation: 'compact',
+    maximumFractionDigits: 2
+  }).format(num)
+}
+
+/**
  * Format crypto price with dynamic precision
  * @param {number} price - Price to format
  * @returns {string} Formatted price

@@ -44,6 +44,7 @@
               Price
               <span v-if="sortField === 'price'" class="text-primary">{{ sortDesc ? '↓' : '↑' }}</span>
             </div>
+            
             <div 
               class="col-span-1 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none"
               @click="toggleSort('change_24h')"
@@ -51,12 +52,30 @@
               24h %
               <span v-if="sortField === 'change_24h'" class="text-primary">{{ sortDesc ? '↓' : '↑' }}</span>
             </div>
-            <div class="col-span-3 text-center">7d Trend</div>
+            
+            <div class="col-span-1 text-right">7d %</div>
+
+            <div 
+              class="col-span-1 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none"
+              @click="toggleSort('market_cap')"
+            >
+              Market Cap
+              <span v-if="sortField === 'market_cap'" class="text-primary">{{ sortDesc ? '↓' : '↑' }}</span>
+            </div>
+            
+            <div 
+              class="col-span-1 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none"
+              @click="toggleSort('volume_24h')"
+            >
+              Volume
+              <span v-if="sortField === 'volume_24h'" class="text-primary">{{ sortDesc ? '↓' : '↑' }}</span>
+            </div>
+
             <div 
               class="col-span-2 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none"
               @click="toggleSort('trust_score')"
             >
-              Trust Score
+              Score
               <span v-if="sortField === 'trust_score'" class="text-primary">{{ sortDesc ? '↓' : '↑' }}</span>
             </div>
           </div>

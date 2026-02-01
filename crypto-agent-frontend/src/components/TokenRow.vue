@@ -4,7 +4,7 @@
     @click="router.push(`/token/${token.id}`)"
   >
     <div class="grid grid-cols-12 gap-4 items-center py-4 px-6 relative z-10">
-      <!-- Rank & Star -->
+      <!-- Rank & Star (1 col) -->
       <div class="col-span-1 flex items-center gap-2">
         <button 
           @click.stop="toggleFavorite(token.symbol)"
@@ -18,7 +18,7 @@
         </span>
       </div>
 
-      <!-- Token Info -->
+      <!-- Token Info (3 cols) -->
       <div class="col-span-3">
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-xs font-bold ring-1 ring-white/10 overflow-hidden">
@@ -27,7 +27,7 @@
           </div>
           <div>
             <div class="font-bold text-white leading-none">{{ token.symbol }}</div>
-            <div class="text-xs text-gray-500 mt-1 truncate max-w-[120px]">{{ token.name }}</div>
+            <div class="text-xs text-gray-500 mt-1 truncate max-w-[150px]">{{ token.name }}</div>
           </div>
           <div v-if="token.category" class="hidden sm:inline-block px-2 py-0.5 bg-white/5 text-gray-400 text-[10px] uppercase tracking-wide rounded border border-white/5">
             {{ token.category }}
@@ -35,12 +35,12 @@
         </div>
       </div>
 
-      <!-- Price -->
+      <!-- Price (2 cols) -->
       <div class="col-span-2 text-right">
         <div class="text-white font-mono font-medium tracking-tight">{{ formatCurrency(token.price) }}</div>
       </div>
 
-      <!-- 24h Change -->
+      <!-- 24h Change (1 col) -->
       <div class="col-span-1 text-right">
         <div 
           class="font-mono text-sm"
@@ -50,25 +50,32 @@
         </div>
       </div>
 
-      <!-- 7d Trend (Sparkline) -->
-      <div class="col-span-3 flex justify-center items-center h-10">
-        <SparklineChart 
-          v-if="token.sparkline && token.sparkline.length"
-          :data="token.sparkline" 
-          width="120" 
-          height="40"
-          :is-positive="token.change_7d >= 0"
-        />
-        <div v-else class="text-xs text-gray-600 self-center">No Data</div>
+      <!-- 7d Change (1 col) -->
+      <div class="col-span-1 flex justify-center items-center h-10">
+        <div 
+          class="font-mono text-sm self-center"
+          :class="token.change_7d >= 0 ? 'text-green-400' : 'text-red-400'"
+        >
+          {{ token.change_7d ? Math.abs(token.change_7d).toFixed(1) + '%' : '-' }}
+        </div>
       </div>
 
-      <!-- Trust Score -->
-      <div class="col-span-2 text-right flex items-center justify-end gap-3">
-        <div class="text-right">
-          <div class="font-bold text-white text-sm">{{ token.trust_score?.toFixed(0) || '-' }}</div>
-          <div class="text-[10px] text-gray-500 uppercase">Score</div>
-        </div>
-        <RatingBadge :grade="token.score_breakdown?.grade || 'D'" />
+      <!-- Market Cap (1 col) -->
+      <div class="col-span-1 text-right">
+         <div class="text-white font-mono font-medium tracking-tight text-sm">{{ formatCurrencyCompact(token.market_cap) }}</div>
+      </div>
+
+      <!-- Volume 24h (1 col) -->
+      <div class="col-span-1 text-right">
+         <div class="text-gray-400 font-mono text-xs">{{ formatCurrencyCompact(token.volume_24h) }}</div>
+      </div>
+
+
+
+      <!-- Trust Score (2 cols) -->
+      <div class="col-span-2 text-right flex items-center justify-end gap-2">
+        <div class="font-bold text-white text-sm">{{ token.trust_score?.toFixed(0) || '-' }}</div>
+        <RatingBadge :grade="token.score_breakdown?.grade || 'D'" class="scale-75 origin-right" />
       </div>
     </div>
   </div>
@@ -78,7 +85,7 @@
 import { useRouter } from 'vue-router'
 import RatingBadge from './RatingBadge.vue'
 import SparklineChart from './SparklineChart.vue'
-import { formatNumber, formatCurrency } from '../utils/formatters'
+import { formatNumber, formatCurrency, formatCurrencyCompact } from '../utils/formatters'
 import { useWatchlist } from '../composables/useWatchlist'
 
 const router = useRouter()

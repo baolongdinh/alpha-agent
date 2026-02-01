@@ -26,18 +26,26 @@ func MergeEnhancedData(results map[string]interface{}) []models.Token {
 					}
 					return ""
 				}(),
-				Rank:              coin.CMCRank,
-				Price:             coin.Quote.USD.Price,
-				MarketCap:         coin.Quote.USD.MarketCap,
-				Volume24h:         coin.Quote.USD.Volume24h,
-				Change1h:          coin.Quote.USD.PercentChange1h,
-				Change24h:         coin.Quote.USD.PercentChange24h,
-				Change7d:          coin.Quote.USD.PercentChange7d,
-				Change30d:         coin.Quote.USD.PercentChange30d,
-				Change90d:         coin.Quote.USD.PercentChange90d,
-				VolumeChange24h:   coin.Quote.USD.VolumeChange24h,
-				MaxSupply:         coin.MaxSupply,
-				CirculatingSupply: coin.CirculatingSupply,
+				Rank:            coin.CMCRank,
+				Price:           coin.Quote.USD.Price,
+				MarketCap:       coin.Quote.USD.MarketCap,
+				Volume24h:       coin.Quote.USD.Volume24h,
+				Change1h:        coin.Quote.USD.PercentChange1h,
+				Change24h:       coin.Quote.USD.PercentChange24h,
+				Change7d:        coin.Quote.USD.PercentChange7d,
+				Change30d:       coin.Quote.USD.PercentChange30d,
+				Change90d:       coin.Quote.USD.PercentChange90d,
+				VolumeChange24h: coin.Quote.USD.VolumeChange24h,
+				MaxSupply:       coin.MaxSupply,
+				CirculatingSupply: func() float64 {
+					if coin.CirculatingSupply > 0 {
+						return coin.CirculatingSupply
+					}
+					if coin.Quote.USD.Price > 0 {
+						return coin.Quote.USD.MarketCap / coin.Quote.USD.Price
+					}
+					return 0
+				}(),
 				TotalSupply:       coin.TotalSupply,
 				FullyDilutedValue: coin.Quote.USD.FullyDilutedMarketCap,
 				Sparkline:         coin.Quote.USD.Sparkline,
