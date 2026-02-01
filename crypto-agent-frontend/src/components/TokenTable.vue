@@ -30,15 +30,15 @@
         <div class="sticky top-0 z-30 bg-[#0f1115] border-b border-white/10 px-6 py-4">
           <div class="grid grid-cols-12 gap-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
             <div 
-              class="col-span-1 cursor-pointer hover:text-white flex items-center gap-1 transition-colors select-none"
+              class="col-span-1 cursor-pointer hover:text-white flex items-center gap-1 transition-colors select-none whitespace-nowrap"
               @click="toggleSort('rank')"
             >
               Rank
               <span v-if="sortField === 'rank'" class="text-primary">{{ sortDesc ? '↓' : '↑' }}</span>
             </div>
-            <div class="col-span-3">Token Project</div>
+            <div class="col-span-3 whitespace-nowrap">Token Project</div>
             <div 
-              class="col-span-2 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none"
+              class="col-span-1 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none whitespace-nowrap"
               @click="toggleSort('price')"
             >
               Price
@@ -46,17 +46,17 @@
             </div>
             
             <div 
-              class="col-span-1 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none"
+              class="col-span-1 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none whitespace-nowrap"
               @click="toggleSort('change_24h')"
             >
               24h %
               <span v-if="sortField === 'change_24h'" class="text-primary">{{ sortDesc ? '↓' : '↑' }}</span>
             </div>
             
-            <div class="col-span-1 text-right">7d %</div>
+            <div class="col-span-1 text-right whitespace-nowrap">7d %</div>
 
             <div 
-              class="col-span-1 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none"
+              class="col-span-2 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none whitespace-nowrap"
               @click="toggleSort('market_cap')"
             >
               Market Cap
@@ -64,7 +64,7 @@
             </div>
             
             <div 
-              class="col-span-1 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none"
+              class="col-span-1 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none whitespace-nowrap"
               @click="toggleSort('volume_24h')"
             >
               Volume
@@ -72,7 +72,7 @@
             </div>
 
             <div 
-              class="col-span-2 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none"
+              class="col-span-2 text-right cursor-pointer hover:text-white flex items-center justify-end gap-1 transition-colors select-none whitespace-nowrap"
               @click="toggleSort('trust_score')"
             >
               Score

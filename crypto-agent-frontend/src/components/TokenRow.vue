@@ -35,9 +35,9 @@
         </div>
       </div>
 
-      <!-- Price (2 cols) -->
-      <div class="col-span-2 text-right">
-        <div class="text-white font-mono font-medium tracking-tight">{{ formatCurrency(token.price) }}</div>
+      <!-- Price (1 col) -->
+      <div class="col-span-1 text-right">
+        <div class="text-white font-mono font-medium tracking-tight whitespace-nowrap">{{ formatCurrency(token.price) }}</div>
       </div>
 
       <!-- 24h Change (1 col) -->
@@ -51,17 +51,17 @@
       </div>
 
       <!-- 7d Change (1 col) -->
-      <div class="col-span-1 flex justify-center items-center h-10">
+      <div class="col-span-1 text-right">
         <div 
-          class="font-mono text-sm self-center"
+          class="font-mono text-sm inline-block"
           :class="token.change_7d >= 0 ? 'text-green-400' : 'text-red-400'"
         >
           {{ token.change_7d ? Math.abs(token.change_7d).toFixed(1) + '%' : '-' }}
         </div>
       </div>
 
-      <!-- Market Cap (1 col) -->
-      <div class="col-span-1 text-right">
+      <!-- Market Cap (2 cols) -->
+      <div class="col-span-2 text-right">
          <div class="text-white font-mono font-medium tracking-tight text-sm">{{ formatCurrencyCompact(token.market_cap) }}</div>
       </div>
 
