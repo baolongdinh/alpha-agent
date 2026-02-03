@@ -4,99 +4,123 @@
     <div class="p-0 overflow-hidden bg-[#0a0b0f] w-full mx-auto flex flex-col min-h-screen relative text-gray-300">
       
       <!-- HERO HEADER SECTION -->
-      <div class="relative p-6 pb-8 overflow-hidden">
-        <!-- Dynamic Hero Background -->
-        <div class="absolute inset-0 bg-gradient-to-br from-[#1a1c24] via-[#0a0b10] to-[#050608] z-0"></div>
-        <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2 z-0 animate-pulse"></div>
+      <div class="relative p-6 pt-24 pb-12 overflow-hidden">
+        <!-- Dynamic Hero Background with sophisticated mesh -->
+        <div class="absolute inset-0 bg-[#0a0b0f] z-0"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.15)_0%,transparent_50%)] z-0"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(99,102,241,0.1)_0%,transparent_50%)] z-0"></div>
+        <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/20 blur-[150px] rounded-full translate-x-1/3 -translate-y-1/3 z-0 animate-slow-pulse"></div>
         
-        <!-- Back Button -->
-        <button @click="$router.push('/')" class="absolute top-6 left-6 p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all z-20 hover:scale-110 active:scale-95 group flex items-center gap-2">
-          <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-          <span class="text-xs font-bold uppercase tracking-wider">Back</span>
+        <!-- Redesigned Back Button: Elegant Translucent Pill -->
+        <button 
+          @click="$router.push('/')" 
+          class="absolute top-8 left-8 flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 backdrop-blur-xl transition-all duration-300 group z-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+        >
+          <div class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <svg class="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </div>
+          <span class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-white transition-colors">Return Pulse</span>
         </button>
 
-        <div v-if="displayToken && displayToken.symbol" class="relative z-10">
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <!-- Left: Identity -->
-            <div class="flex items-center gap-6">
+        <div v-if="displayToken && displayToken.symbol" class="relative z-10 max-w-[1400px] mx-auto">
+          <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+            <!-- Left: Identity with enhanced depth -->
+            <div class="flex items-center gap-8">
               <div class="relative group">
-                <div class="absolute -inset-4 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-800 to-black flex items-center justify-center border border-white/20 shadow-2xl relative z-10 overflow-hidden backdrop-blur-xl">
-                  <img v-if="displayToken.image" :src="displayToken.image" :alt="displayToken.name" class="w-full h-full object-cover scale-9 group-hover:scale-100 transition-transform duration-500" />
-                  <span v-else class="text-2xl font-black text-primary">{{ displayToken.symbol?.[0] || '?' }}</span>
+                <div class="absolute -inset-6 bg-primary/25 blur-3xl rounded-full opacity-40 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                <div class="w-24 h-24 rounded-[32px] bg-gradient-to-br from-white/10 to-transparent flex items-center justify-center border border-white/20 shadow-2xl relative z-10 overflow-hidden backdrop-blur-3xl group-hover:scale-105 transition-transform duration-500">
+                  <img v-if="displayToken.image" :src="displayToken.image" :alt="displayToken.name" class="w-full h-full object-cover p-3 group-hover:p-1 transition-all duration-700" />
+                  <span v-else class="text-4xl font-black text-primary">{{ displayToken.symbol?.[0] || '?' }}</span>
                 </div>
               </div>
               
-              <div class="space-y-1.5">
-                <div class="flex items-center gap-3">
-                  <h2 class="text-4xl font-black text-white tracking-tighter leading-tight">{{ displayToken.name }}</h2>
-                  <span class="px-2 py-0.5 bg-white/5 border border-white/10 rounded-md text-gray-400 text-[10px] font-mono font-bold tracking-widest uppercase h-min mt-1">{{ displayToken.symbol }}</span>
+              <div class="space-y-3">
+                <div class="flex items-center gap-4 flex-wrap">
+                  <h2 class="text-5xl md:text-6xl font-black text-white tracking-tighter leading-none">{{ displayToken.name }}</h2>
+                  <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-gray-400 text-[10px] font-mono font-black tracking-widest uppercase">{{ displayToken.symbol }}</span>
+                    <div class="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black rounded-lg border border-primary/20 flex items-center gap-2 shadow-inner">
+                      <span class="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></span>
+                      RANK #{{ displayToken.rank }}
+                    </div>
+                  </div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <div class="flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary text-[10px] font-black rounded-full border border-primary/20">
-                    <span class="w-1 h-1 bg-primary rounded-full animate-pulse"></span>
-                    RANK #{{ displayToken.rank }}
-                  </div>
-                  <div v-if="displayToken.category" class="px-3 py-1 bg-white/5 text-gray-400 text-[10px] font-black rounded-full border border-white/10 uppercase tracking-widest">
+                  <div v-if="displayToken.category" class="px-3 py-1 bg-white/5 text-gray-500 text-[9px] font-black rounded-md border border-white/5 uppercase tracking-widest hover:text-white transition-colors cursor-default">
                     {{ displayToken.category }}
+                  </div>
+                  <div class="px-3 py-1 bg-white/5 text-gray-500 text-[9px] font-black rounded-md border border-white/5 uppercase tracking-widest">
+                    Live Analysis
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Right: Real-time Wealth Panel -->
-            <div class="flex flex-col items-end gap-1 text-right">
-              <div class="text-[9px] font-black text-primary uppercase tracking-[0.4em] mb-0.5">Live Asset Valuation</div>
-              <div class="text-5xl font-black text-white tracking-tighter mb-1 tabular-nums drop-shadow-2xl">
+            <!-- Right: Premium Real-time Price -->
+            <div class="flex flex-col items-end gap-2 text-right">
+              <div class="text-[10px] font-black text-primary uppercase tracking-[0.5em] mb-1 opacity-70">Market Valuation</div>
+              <div class="text-6xl font-black text-white tracking-tighter mb-2 tabular-nums drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                 {{ formatCurrency(displayToken.price) }}
               </div>
               
-              <div class="flex items-center gap-3 justify-end">
-                <!-- 24H Change Badge -->
+              <div class="flex items-center gap-4 justify-end">
                 <div 
-                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs border shadow-lg"
-                  :class="displayToken.change_24h >= 0 ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-500'"
+                  class="flex items-center gap-2 px-4 py-2 rounded-2xl font-black text-xs border backdrop-blur-md shadow-xl transition-transform hover:scale-110"
+                  :class="displayToken.change_24h >= 0 ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-500'"
                 >
-                  <span class="text-lg leading-none">{{ displayToken.change_24h >= 0 ? '↗' : '↘' }}</span>
-                  <span class="font-mono">{{ Math.abs(displayToken.change_24h).toFixed(2) }}%</span>
-                  <span class="text-[9px] opacity-40 uppercase ml-1">24H</span>
+                  <span class="text-xl leading-none">{{ displayToken.change_24h >= 0 ? '↑' : '↓' }}</span>
+                  <span class="font-mono text-sm">{{ Math.abs(displayToken.change_24h).toFixed(2) }}%</span>
+                  <span class="text-[9px] opacity-50 uppercase font-black">24H</span>
                 </div>
                 
-                <!-- 7D Change Badge -->
                 <div 
-                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs border shadow-lg"
-                  :class="displayToken.change_7d >= 0 ? 'bg-green-500/10 border-green-500/20 text-green-400/80' : 'bg-red-500/10 border-red-500/20 text-red-500/80'"
+                  class="flex items-center gap-2 px-4 py-2 rounded-2xl font-black text-xs border backdrop-blur-md shadow-xl transition-transform hover:scale-110"
+                  :class="displayToken.change_7d >= 0 ? 'bg-green-500/10 border-green-500/10 text-green-400/70' : 'bg-red-500/10 border-red-500/10 text-red-500/70'"
                 >
-                   <span class="font-mono">{{ Math.abs(displayToken.change_7d).toFixed(2) }}%</span>
-                   <span class="text-[9px] opacity-40 uppercase ml-1">7D</span>
+                   <span class="font-mono text-sm">{{ Math.abs(displayToken.change_7d).toFixed(2) }}%</span>
+                   <span class="text-[9px] opacity-50 uppercase font-black">7D</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Quick Stats Belt -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-4 border-t border-white/5 relative z-10">
-            <div class="group px-2">
-              <div class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1 group-hover:text-primary transition-colors">Circulating Supply</div>
-              <div class="text-base font-mono text-white flex items-end gap-1.5">
+          <!-- Refined Quick Stats Belt -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 pt-8 border-t border-white/10 relative z-10">
+            <div class="group py-2">
+              <div class="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mb-3 group-hover:text-primary transition-colors flex items-center gap-2">
+                <span class="w-1.5 h-1.5 bg-primary/40 rounded-full group-hover:bg-primary"></span>
+                Circulating
+              </div>
+              <div class="text-xl font-mono text-white flex items-end gap-2 group-hover:scale-105 transition-transform origin-left">
                 {{ formatNumber(displayToken.circulating_supply) }} 
-                <span class="text-[9px] text-gray-600 mb-0.5 font-sans uppercase">{{ displayToken.symbol }}</span>
+                <span class="text-[10px] text-gray-600 mb-1 font-sans font-black uppercase tracking-widest">{{ displayToken.symbol }}</span>
               </div>
-              <div class="w-full h-1 bg-white/5 rounded-full mt-1.5 overflow-hidden">
-                <div class="h-full bg-primary/40" :style="{ width: displayToken.max_supply > 0 ? (displayToken.circulating_supply / displayToken.max_supply * 100) + '%' : '100%' }"></div>
+              <div class="w-full h-1 bg-white/5 rounded-full mt-3 overflow-hidden border border-white/5">
+                <div class="h-full bg-gradient-to-r from-primary to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]" :style="{ width: displayToken.max_supply > 0 ? (displayToken.circulating_supply / displayToken.max_supply * 100) + '%' : '100%' }"></div>
               </div>
             </div>
-            <div class="group px-2">
-              <div class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1 group-hover:text-amber-500 transition-colors">Max Token Supply</div>
-              <div class="text-base font-mono text-white">{{ displayToken.max_supply > 0 ? formatNumber(displayToken.max_supply) : '∞ UNLIMITED' }}</div>
+            <div class="group py-2">
+              <div class="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mb-3 group-hover:text-amber-500 transition-colors flex items-center gap-2">
+                <span class="w-1.5 h-1.5 bg-amber-500/40 rounded-full group-hover:bg-amber-500"></span>
+                Max Supply
+              </div>
+              <div class="text-xl font-mono text-white group-hover:scale-105 transition-transform origin-left">{{ displayToken.max_supply > 0 ? formatNumber(displayToken.max_supply) : '∞ UNLIMITED' }}</div>
             </div>
-            <div class="group px-2">
-              <div class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1 group-hover:text-cyan-500 transition-colors">Market Share</div>
-              <div class="text-base font-mono text-cyan-400 font-bold tracking-widest">{{ (displayToken.MarketCapDom || displayToken.market_cap_dominance || 0).toFixed(3) }}%</div>
+            <div class="group py-2">
+              <div class="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mb-3 group-hover:text-cyan-500 transition-colors flex items-center gap-2">
+                <span class="w-1.5 h-1.5 bg-cyan-500/40 rounded-full group-hover:bg-cyan-500"></span>
+                Market Share
+              </div>
+              <div class="text-xl font-mono text-cyan-400 font-black group-hover:scale-110 transition-transform origin-left">{{ (displayToken.MarketCapDom || displayToken.market_cap_dominance || 0).toFixed(3) }}%</div>
             </div>
-            <div class="group px-2">
-              <div class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1 group-hover:text-green-500 transition-colors">Peak Valuation (FDV)</div>
-              <div class="text-base font-mono text-white tracking-tight">{{ formatCurrencyCompact(displayToken.fdv) }}</div>
+            <div class="group py-2">
+              <div class="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mb-3 group-hover:text-green-500 transition-colors flex items-center gap-2">
+                <span class="w-1.5 h-1.5 bg-green-500/40 rounded-full group-hover:bg-green-500"></span>
+                Valuation (FDV)
+              </div>
+              <div class="text-xl font-mono text-white tracking-tight group-hover:scale-105 transition-transform origin-left">{{ formatCurrencyCompact(displayToken.fdv) }}</div>
             </div>
           </div>
         </div>
@@ -542,19 +566,38 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes slow-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1) translate(33%, -33%); }
+  50% { opacity: 0.6; transform: scale(1.1) translate(30%, -30%); }
+}
+
+.animate-slow-pulse {
+  animation: slow-pulse 10s ease-in-out infinite;
+}
+
 .glass-bento {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 32px;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 40px;
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 
+    0 10px 30px -10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 .glass-bento:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(59, 130, 246, 0.2);
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 
+    0 30px 60px -20px rgba(0, 0, 0, 0.7),
+    0 0 20px rgba(59, 130, 246, 0.1);
 }
 
 .animate-shimmer {

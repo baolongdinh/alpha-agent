@@ -81,6 +81,14 @@ const progressClass = computed(() => {
 
 <style scoped>
 .glass-card {
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(16px) saturate(180%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
+  box-shadow: 
+    0 4px 24px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.glass-card:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
 }
 </style>
