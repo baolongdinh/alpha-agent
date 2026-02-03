@@ -1,10 +1,10 @@
 package main
 
 import (
-	"crypto-agent-backend/cache"
-	"crypto-agent-backend/config"
-	"crypto-agent-backend/handlers"
-	"crypto-agent-backend/services"
+	"backend/cache"
+	"backend/config"
+	"backend/handlers"
+	"backend/services"
 	"log"
 	"os"
 	"os/signal"
@@ -71,7 +71,7 @@ func main() {
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status":  "ok",
-			"service": "crypto-agent-backend",
+			"service": "backend",
 			"version": "1.0.0",
 			"cache": gin.H{
 				"tokens":   cacheManager.GetTokenCacheItemCount(),

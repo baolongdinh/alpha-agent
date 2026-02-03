@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"crypto-agent-backend/models"
+	"backend/models"
 	"fmt"
 	"strings"
 )

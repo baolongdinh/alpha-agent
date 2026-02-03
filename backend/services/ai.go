@@ -1,9 +1,9 @@
 package services
 
 import (
+	"backend/config"
+	"backend/models"
 	"context"
-	"crypto-agent-backend/config"
-	"crypto-agent-backend/models"
 	"fmt"
 	"log"
 	"strings"

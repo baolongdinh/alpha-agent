@@ -2,7 +2,7 @@ import axios from 'axios'
 // import mockData from './mockData.json' // Removed to prevent fake data fallback
 
 // Configuration
-const API_BASE_URL = 'http://localhost:8080/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 const COINGECKO_API = 'https://api.coingecko.com/api/v3'
 const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens'
 const GOPLUS_API = 'https://api.goplusecurity.com/api/v1/token_security'
@@ -21,40 +21,58 @@ export const api = {
   /**
    * Fetch Market Data (From Backend)
    */
-  async fetchMarketData() {
-    // 1. Check Cache
+  async fetchMarketData(offset = 0, filters = {}) {
+    // 1. Check Cache - Disable cache for filtered requests or offset > 0
     const now = Date.now()
-    if (cache.marketData.data && (now - cache.marketData.timestamp < cache.marketData.duration)) {
+    const hasFilters = Object.values(filters).some(v => v !== null && v !== '' && v !== 'All Sectors')
+
+    if (offset === 0 && !hasFilters && cache.marketData.data && (now - cache.marketData.timestamp < cache.marketData.duration)) {
       console.log('⚡ Using cached market data')
-      return { data: cache.marketData.data }
+      return { data: cache.marketData.data, hasMore: true }
     }
 
     try {
-      console.log('🌍 Fetching from Backend:', `${API_BASE_URL}/tokens`)
-      const response = await axios.get(`${API_BASE_URL}/tokens`, {
-         params: {
-             limit: 5000 // Match CMC's 2000 token limit
-         }
-      })
-      
-      // Backend returns { status: "success", data: [...], ... }
+      const params = {
+        limit: 50,
+        offset: offset,
+        category: filters.category === 'All Sectors' ? '' : filters.category,
+        search: filters.search,
+        min_mcap: filters.minMcap,
+        max_mcap: filters.maxMcap,
+        min_price: filters.minPrice,
+        max_price: filters.maxPrice,
+        min_score: filters.minScore,
+        max_score: filters.maxScore,
+        min_change: filters.minChange,
+        max_change: filters.maxChange
+      }
+
+      console.log('🌍 Fetching from Backend:', `${API_BASE_URL}/tokens`, params)
+      const response = await axios.get(`${API_BASE_URL}/tokens`, { params })
+
+      // Backend returns { status: "success", data: [...], has_more: true, ... }
       if (response.data && response.data.status === 'success') {
-          const mappedData = response.data.data.map(transformBackendToken)
-          
-          // Update Cache
+        const mappedData = response.data.data.map(transformBackendToken)
+
+        if (offset === 0) {
           cache.marketData = {
             data: mappedData,
             timestamp: now
           }
-          return { data: mappedData }
+        }
+        return {
+          data: mappedData,
+          hasMore: response.data.has_more,
+          total: response.data.total
+        }
       } else {
-          throw new Error('Backend returned error status')
+        throw new Error('Backend returned error status')
       }
 
     } catch (error) {
       console.error('❌ Backend fetch failed:', error)
       // Return empty or throw, do NOT use mock data
-      throw error 
+      throw error
     }
   },
 
@@ -62,18 +80,18 @@ export const api = {
    * Fetch DexScreener Data
    */
   async fetchDexPairs(chainId, address) {
-      if (!chainId || !address) return null
-      // DexScreener uses different chain IDs e.g. 'ethereum', 'bsc', 'solana'
-      // My getChainAndAddress helper returns '1', '56' etc.
-      // Need mapping or just try. DexScreener endpoint: /latest/dex/tokens/{tokenAddresses}
-      // It returns pairs across all chains for that address.
-      try {
-        const response = await axios.get(`${DEXSCREENER_API}/${address}`)
-        return response.data.pairs || []
-      } catch (e) {
-        console.warn('DexScreener fetch failed', e)
-        return null
-      }
+    if (!chainId || !address) return null
+    // DexScreener uses different chain IDs e.g. 'ethereum', 'bsc', 'solana'
+    // My getChainAndAddress helper returns '1', '56' etc.
+    // Need mapping or just try. DexScreener endpoint: /latest/dex/tokens/{tokenAddresses}
+    // It returns pairs across all chains for that address.
+    try {
+      const response = await axios.get(`${DEXSCREENER_API}/${address}`)
+      return response.data.pairs || []
+    } catch (e) {
+      console.warn('DexScreener fetch failed', e)
+      return null
+    }
   },
 
   /**
@@ -102,24 +120,24 @@ export const api = {
     const now = Date.now()
     const cached = cache.tokenDetails.get(id)
     if (cached && (now - cached.timestamp < 30000)) {
-        return cached.data
+      return cached.data
     }
 
     try {
-        console.log(`🌍 Fetching Token Detail for ${id} from Backend...`)
-        // The 'id' here is usually the symbol or name passed from transformBackendToken
-        const response = await axios.get(`${API_BASE_URL}/tokens/${id}`)
-        
-        if (response.data) {
-           const data = response.data
-           // No need to transform again since backend returns the full Token model
-           cache.tokenDetails.set(id, { data, timestamp: now })
-           return data
-        }
-        return null
+      console.log(`🌍 Fetching Token Detail for ${id} from Backend...`)
+      // The 'id' here is usually the symbol or name passed from transformBackendToken
+      const response = await axios.get(`${API_BASE_URL}/tokens/${id}`)
+
+      if (response.data) {
+        const data = response.data
+        // No need to transform again since backend returns the full Token model
+        cache.tokenDetails.set(id, { data, timestamp: now })
+        return data
+      }
+      return null
     } catch (e) {
-        console.error('❌ Failed to fetch backend token detail', e)
-        return null
+      console.error('❌ Failed to fetch backend token detail', e)
+      return null
     }
   },
 
@@ -140,29 +158,29 @@ export const api = {
 }
 
 function transformBackendToken(token) {
-    // Map Backend model to Frontend UI expectations
-    return {
-        id: (token.id || token.name).toLowerCase().replace(/\s+/g, '-'),
-        
-        rank: token.rank,
-        name: token.name,
-        symbol: token.symbol,
-        image: token.image,
-        price: token.price,
-        change_24h: token.change_24h,
-        change_7d: token.change_7d,
-        market_cap: token.market_cap,
-        volume_24h: token.volume_24h,
-        tvl: token.tvl,
-        liquidity: token.liquidity,
-        ath: token.ath,
-        ath_change: token.ath_change,
-        fdv: token.fdv,
-        sparkline: token.sparkline, // Backend returns array
-        trust_score: token.trust_score,
-        score_breakdown: token.score_breakdown, // Pass through the breakdown!
-        category: token.category
-    }
+  // Map Backend model to Frontend UI expectations
+  return {
+    id: (token.id || token.name).toLowerCase().replace(/\s+/g, '-'),
+
+    rank: token.rank,
+    name: token.name,
+    symbol: token.symbol,
+    image: token.image,
+    price: token.price,
+    change_24h: token.change_24h,
+    change_7d: token.change_7d,
+    market_cap: token.market_cap,
+    volume_24h: token.volume_24h,
+    tvl: token.tvl,
+    liquidity: token.liquidity,
+    ath: token.ath,
+    ath_change: token.ath_change,
+    fdv: token.fdv,
+    sparkline: token.sparkline, // Backend returns array
+    trust_score: token.trust_score,
+    score_breakdown: token.score_breakdown, // Pass through the breakdown!
+    category: token.category
+  }
 }
 
 /**
@@ -193,17 +211,17 @@ export const formatCurrencyCompact = (val) => {
 
 function getChainAndAddress(platforms) {
   if (!platforms) return { chainId: null, address: null }
-  
+
   // Priority map: CoinGecko Platform -> GoPlus Chain ID
   // 1: Ethereum, 56: BSC, 137: Polygon, 42161: Arbitrum, 43114: Avalanche, 10: Optimism
   // Solana: GoPlus uses specialized API usually, but let's check basic EVM first or use Sol
   // For Solana (solana), GoPlus might have different endpoint or ID. 
   // Simplify to EVM for this demo phase + Solana if easy.
-  
+
   if (platforms.ethereum) return { chainId: '1', address: platforms.ethereum }
   if (platforms['binance-smart-chain']) return { chainId: '56', address: platforms['binance-smart-chain'] }
   if (platforms['polygon-pos']) return { chainId: '137', address: platforms['polygon-pos'] }
   if (platforms.solana) return { chainId: 'solana', address: platforms.solana } // GoPlus might handle solana differently
-  
+
   return { chainId: null, address: null }
 }

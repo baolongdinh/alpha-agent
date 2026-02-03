@@ -1,4 +1,4 @@
-module crypto-agent-backend
+module backend
 
 go 1.24.5
 

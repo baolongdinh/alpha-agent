@@ -1,10 +1,10 @@
 package services
 
 import (
+	"backend/config"
+	"backend/models"
+	"backend/utils"
 	"context"
-	"crypto-agent-backend/config"
-	"crypto-agent-backend/models"
-	"crypto-agent-backend/utils"
 	"encoding/json"
 	"fmt"
 	"log"

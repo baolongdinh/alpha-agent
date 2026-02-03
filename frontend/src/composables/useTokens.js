@@ -6,6 +6,9 @@ const tokens = ref([])
 const loading = ref(false)
 const error = ref(null)
 const lastFetch = ref(null)
+const hasMore = ref(true)
+const offset = ref(0)
+const PAGE_SIZE = 50
 
 // Filter state
 const filters = ref({
@@ -19,7 +22,7 @@ const filters = ref({
   minChange: null,
   maxChange: null,
   category: '',
-  limit: 5000,
+  limit: PAGE_SIZE, // Changed from 200 to PAGE_SIZE
 })
 
 const marketStats = ref(null)
@@ -28,30 +31,55 @@ export function useTokens() {
   /**
    * Fetch tokens from API 
    */
-  const fetchTokens = async () => {
-    loading.value = true
+  const fetchTokens = async (isLoadMore = false) => {
+    if (!isLoadMore) {
+      loading.value = true
+      offset.value = 0
+      hasMore.value = true
+    }
+
     error.value = null
 
     try {
-      console.log('🔍 Fetching base market data...')
-      
+      console.log(`🔍 Fetching market data (isLoadMore: ${isLoadMore}, offset: ${offset.value})...`)
+
       const [tokensResp, statsResp] = await Promise.all([
-        api.fetchMarketData(), // Fetch full set, let FE handle the filtering for speed
-        api.fetchMarketStats()
+        api.fetchMarketData(offset.value, filters.value),
+        !isLoadMore ? api.fetchMarketStats() : Promise.resolve(marketStats.value)
       ])
 
-      tokens.value = tokensResp.data || []
+      const newData = tokensResp.data || []
+      if (isLoadMore) {
+        // Append data
+        const existingIds = new Set(tokens.value.map(t => t.symbol))
+        const filteredNewData = newData.filter(t => !existingIds.has(t.symbol))
+        tokens.value = [...tokens.value, ...filteredNewData]
+      } else {
+        tokens.value = newData
+      }
+
+      hasMore.value = tokensResp.hasMore
       marketStats.value = statsResp
       lastFetch.value = new Date()
-      console.log(`✅ Loaded ${tokens.value.length} tokens into memory`)
+      console.log(`✅ Total tokens in memory: ${tokens.value.length}, HasMore: ${hasMore.value}`)
 
     } catch (err) {
       error.value = err.message || 'Failed to fetch tokens'
       console.error('❌ Error fetching tokens:', error.value)
-      tokens.value = []
+      if (!isLoadMore) tokens.value = []
     } finally {
       loading.value = false
     }
+  }
+
+  /**
+   * Load More (Incremental)
+   */
+  const loadMore = async () => {
+    if (loading.value || !hasMore.value) return
+
+    offset.value += PAGE_SIZE
+    await fetchTokens(true)
   }
 
   /**
@@ -59,11 +87,11 @@ export function useTokens() {
    */
   const fetchTokenDetail = async (id) => {
     try {
-       const response = await api.fetchTokenDetail(id)
-       return response
+      const response = await api.fetchTokenDetail(id)
+      return response
     } catch (e) {
-       console.error("Error fetching detail:", e)
-       return null
+      console.error("Error fetching detail:", e)
+      return null
     }
   }
 
@@ -72,6 +100,7 @@ export function useTokens() {
    */
   const updateFilters = (newFilters) => {
     filters.value = { ...filters.value, ...newFilters }
+    fetchTokens() // Refetch when filters change
   }
 
   /**
@@ -89,8 +118,10 @@ export function useTokens() {
       minChange: null,
       maxChange: null,
       category: '',
-      limit: 5000,
+      limit: PAGE_SIZE,
     }
+    offset.value = 0
+    hasMore.value = true
   }
 
   /**
@@ -100,57 +131,10 @@ export function useTokens() {
     fetchTokens()
   }
 
-  // Reactive Filter logic
+  // Reactive Filter logic is now mostly handled by Backend
   const filteredTokens = computed(() => {
+    // Sorting is still FE reactive for instant feel, but data subset is BE filtered
     let result = [...tokens.value]
-    const f = filters.value
-
-    // 1. Search (Symbol or Name)
-    if (f.search && f.search.trim()) {
-      const term = f.search.toLowerCase().trim()
-      result = result.filter(t => 
-        t.symbol.toLowerCase().includes(term) || 
-        t.name.toLowerCase().includes(term)
-      )
-    }
-
-    // 2. Category / Sector
-    if (f.category && f.category !== 'All Sectors' && f.category !== '') {
-      result = result.filter(t => t.category === f.category)
-    }
-
-    // 3. Market Cap Range
-    if (f.minMcap != null && f.minMcap !== '') {
-      result = result.filter(t => t.market_cap >= Number(f.minMcap))
-    }
-    if (f.maxMcap != null && f.maxMcap !== '') {
-      result = result.filter(t => t.market_cap <= Number(f.maxMcap))
-    }
-
-    // 4. Score Range
-    if (f.minScore != null && f.minScore !== '') {
-      result = result.filter(t => t.trust_score >= Number(f.minScore))
-    }
-    if (f.maxScore != null && f.maxScore !== '') {
-      result = result.filter(t => t.trust_score <= Number(f.maxScore))
-    }
-
-    // 5. Price Range
-    if (f.minPrice != null && f.minPrice !== '') {
-      result = result.filter(t => t.price >= Number(f.minPrice))
-    }
-    if (f.maxPrice != null && f.maxPrice !== '') {
-      result = result.filter(t => t.price <= Number(f.maxPrice))
-    }
-
-    // 6. 24h Change Range
-    if (f.minChange != null && f.minChange !== '') {
-      result = result.filter(t => t.change_24h >= Number(f.minChange))
-    }
-    if (f.maxChange != null && f.maxChange !== '') {
-      result = result.filter(t => t.change_24h <= Number(f.maxChange))
-    }
-
     return result
   })
 
@@ -162,20 +146,22 @@ export function useTokens() {
   return {
     // State
     tokens: filteredTokens, // Expose filtered list as primary data source
-    rawTokens: tokens,
+    rawTokens: tokens, // Expose the raw data for internal use if needed
     loading,
     error,
     lastFetch,
     filters,
     marketStats,
-    
+    hasMore,
+
     // Computed
     hasTokens,
     isEmpty,
     topTokens,
-    
+
     // Methods
     fetchTokens,
+    loadMore,
     fetchTokenDetail,
     updateFilters,
     resetFilters,

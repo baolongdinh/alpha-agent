@@ -203,10 +203,18 @@ type MessariAsset struct {
 
 // FilterParams represents query parameters for filtering tokens
 type FilterParams struct {
-	MinMcap  float64
-	MaxMcap  float64
-	Category string
-	Limit    int
+	MinMcap   float64
+	MaxMcap   float64
+	Category  string
+	Search    string
+	MinPrice  float64
+	MaxPrice  float64
+	MinScore  float64
+	MaxScore  float64
+	MinChange float64
+	MaxChange float64
+	Limit     int
+	Offset    int
 }
 
 // MarketStats represents global market statistics

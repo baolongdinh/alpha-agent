@@ -18,6 +18,7 @@ type TokensResponse struct {
 	Timestamp   time.Time `json:"timestamp"`
 	Total       int       `json:"total"`
 	Data        []Token   `json:"data"`
+	HasMore     bool      `json:"has_more"`
 	FetchTimeMs int64     `json:"fetch_time_ms"`
 }
 

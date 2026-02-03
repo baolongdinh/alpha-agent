@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"crypto-agent-backend/cache"
-	"crypto-agent-backend/config"
-	"crypto-agent-backend/models"
-	"crypto-agent-backend/services"
+	"backend/cache"
+	"backend/config"
+	"backend/models"
+	"backend/services"
 	"log"
 	"net/http"
 	"sort"
@@ -53,13 +53,14 @@ func (h *TokenHandler) GetTokens(c *gin.Context) {
 		log.Printf("✓ Cache hit for key: %s", cacheKey)
 
 		tokens := cached.([]models.Token)
-		filtered := h.filterAndSortTokens(tokens, params)
+		filtered, total, hasMore := h.filterAndSortTokens(tokens, params)
 
 		c.JSON(http.StatusOK, models.TokensResponse{
 			Status:      "success",
 			Timestamp:   time.Now(),
-			Total:       len(filtered),
+			Total:       total,
 			Data:        filtered,
+			HasMore:     hasMore,
 			FetchTimeMs: time.Since(startTime).Milliseconds(),
 		})
 		return
@@ -87,16 +88,17 @@ func (h *TokenHandler) GetTokens(c *gin.Context) {
 	log.Printf("✓ Cached %d tokens with key: %s", len(tokens), cacheKey)
 
 	// Filter and sort
-	filtered := h.filterAndSortTokens(tokens, params)
+	filtered, total, hasMore := h.filterAndSortTokens(tokens, params)
 
 	fetchDuration := time.Since(startTime)
-	log.Printf("✅ Request completed in %v: %d tokens returned", fetchDuration, len(filtered))
+	log.Printf("✅ Request completed in %v: %d tokens returned (total match: %d)", fetchDuration, len(filtered), total)
 
 	c.JSON(http.StatusOK, models.TokensResponse{
 		Status:      "success",
 		Timestamp:   time.Now(),
-		Total:       len(filtered),
+		Total:       total,
 		Data:        filtered,
+		HasMore:     hasMore,
 		FetchTimeMs: fetchDuration.Milliseconds(),
 	})
 }
@@ -174,11 +176,61 @@ func (h *TokenHandler) parseFilterParams(c *gin.Context) models.FilterParams {
 		params.Category = category
 	}
 
+	// Search
+	if search := c.Query("search"); search != "" {
+		params.Search = strings.ToLower(search)
+	}
+
+	// Price Range
+	if minPrice := c.Query("min_price"); minPrice != "" {
+		if val, err := strconv.ParseFloat(minPrice, 64); err == nil {
+			params.MinPrice = val
+		}
+	}
+	if maxPrice := c.Query("max_price"); maxPrice != "" {
+		if val, err := strconv.ParseFloat(maxPrice, 64); err == nil {
+			params.MaxPrice = val
+		}
+	}
+
+	// Score Range
+	if minScore := c.Query("min_score"); minScore != "" {
+		if val, err := strconv.ParseFloat(minScore, 64); err == nil {
+			params.MinScore = val
+		}
+	}
+	if maxScore := c.Query("max_score"); maxScore != "" {
+		if val, err := strconv.ParseFloat(maxScore, 64); err == nil {
+			params.MaxScore = val
+		}
+	}
+
+	// Change Range
+	if minChange := c.Query("min_change"); minChange != "" {
+		if val, err := strconv.ParseFloat(minChange, 64); err == nil {
+			params.MinChange = val
+		}
+	}
+	if maxChange := c.Query("max_change"); maxChange != "" {
+		if val, err := strconv.ParseFloat(maxChange, 64); err == nil {
+			params.MaxChange = val
+		}
+	}
+
 	// Limit
 	if limit := c.Query("limit"); limit != "" {
 		if val, err := strconv.Atoi(limit); err == nil {
 			if val > 0 && val <= 5000 {
 				params.Limit = val
+			}
+		}
+	}
+
+	// Offset
+	if offset := c.Query("offset"); offset != "" {
+		if val, err := strconv.Atoi(offset); err == nil {
+			if val >= 0 {
+				params.Offset = val
 			}
 		}
 	}
@@ -191,8 +243,8 @@ func (h *TokenHandler) buildCacheKey(params models.FilterParams) string {
 	return "tokens_all" // Simple key for now; can be enhanced with params
 }
 
-// filterAndSortTokens applies filters and sorting
-func (h *TokenHandler) filterAndSortTokens(tokens []models.Token, params models.FilterParams) []models.Token {
+// filterAndSortTokens applies filters and sorting, then returns the subset, total count and hasMore info
+func (h *TokenHandler) filterAndSortTokens(tokens []models.Token, params models.FilterParams) ([]models.Token, int, bool) {
 	filtered := make([]models.Token, 0)
 
 	for _, token := range tokens {
@@ -214,6 +266,38 @@ func (h *TokenHandler) filterAndSortTokens(tokens []models.Token, params models.
 			continue
 		}
 
+		// Search filter (Symbol or Name)
+		if params.Search != "" {
+			if !strings.Contains(strings.ToLower(token.Symbol), params.Search) &&
+				!strings.Contains(strings.ToLower(token.Name), params.Search) {
+				continue
+			}
+		}
+
+		// Price filter
+		if params.MinPrice > 0 && token.Price < params.MinPrice {
+			continue
+		}
+		if params.MaxPrice > 0 && token.Price > params.MaxPrice {
+			continue
+		}
+
+		// Score filter
+		if params.MinScore > 0 && token.TrustScore < params.MinScore {
+			continue
+		}
+		if params.MaxScore > 0 && token.TrustScore > params.MaxScore {
+			continue
+		}
+
+		// Change filter
+		if params.MinChange != 0 && token.Change24h < params.MinChange {
+			continue
+		}
+		if params.MaxChange != 0 && token.Change24h > params.MaxChange {
+			continue
+		}
+
 		filtered = append(filtered, token)
 	}
 
@@ -222,15 +306,27 @@ func (h *TokenHandler) filterAndSortTokens(tokens []models.Token, params models.
 		return filtered[i].TrustScore > filtered[j].TrustScore
 	})
 
-	// Apply limit
-	if params.Limit > 0 && len(filtered) > params.Limit {
-		filtered = filtered[:params.Limit]
-	}
-
-	// Add rankings
+	// Add rankings before slicing to maintain consistent rank across pages
 	for i := range filtered {
 		filtered[i].Rank = i + 1
 	}
 
-	return filtered
+	totalFiltered := len(filtered)
+	hasMore := false
+
+	// Apply Offset
+	if params.Offset >= totalFiltered {
+		return []models.Token{}, 0, false
+	}
+
+	// Apply Limit
+	start := params.Offset
+	end := start + params.Limit
+	if end > totalFiltered {
+		end = totalFiltered
+	} else if end < totalFiltered {
+		hasMore = true
+	}
+
+	return filtered[start:end], totalFiltered, hasMore
 }

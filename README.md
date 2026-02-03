@@ -40,7 +40,7 @@ AlphaAgent is an intelligent cryptocurrency market tracking and analysis platfor
 ### 1. Start Backend
 
 ```bash
-cd crypto-agent-backend
+cd backend
 
 # Install dependencies
 go mod download
@@ -57,7 +57,7 @@ go run .
 ### 2. Start Frontend
 
 ```bash
-cd crypto-agent-frontend
+cd frontend
 
 # Install dependencies
 npm install

@@ -6,8 +6,8 @@
 *.dll
 *.so
 *.dylib
-crypto-agent-backend
-crypto-agent-backend.exe
+backend
+backend.exe
 
 # Test binary
 *.test

@@ -25,7 +25,10 @@
     <!-- Table Container -->
     <div class="glass-panel rounded-xl overflow-hidden shadow-2xl">
       <!-- Scrollable Area containing both Header and Rows -->
-      <div class="custom-scrollbar max-h-[calc(100vh-350px)] overflow-y-auto relative">
+      <div 
+        ref="scrollContainer"
+        class="custom-scrollbar max-h-[calc(100vh-350px)] overflow-y-auto relative"
+      >
         <!-- Sticky Table Header -->
         <div class="sticky top-0 z-30 bg-[#0f1115] border-b border-white/10 px-6 py-4">
           <div class="grid grid-cols-12 gap-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -107,6 +110,20 @@
             :token="token"
             class="hover:bg-white/5 transition-colors cursor-pointer"
           />
+          
+          <!-- Infinite Scroll Sentinel -->
+          <div ref="sentinel" class="py-10 flex justify-center items-center">
+            <div v-if="loading && tokens.length > 0" class="flex items-center gap-3 text-primary text-sm font-medium">
+              <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Loading more tokens...</span>
+            </div>
+            <div v-else-if="!hasMore && tokens.length > 0" class="text-gray-500 text-xs uppercase tracking-widest font-bold opacity-50">
+              End of market pulse
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -116,7 +133,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import FilterBar from './FilterBar.vue'
 import LoadingSkeleton from './LoadingSkeleton.vue'
 import TokenRow from './TokenRow.vue'
@@ -132,11 +149,52 @@ const {
   filters,
   hasTokens,
   isEmpty,
+  hasMore,
   fetchTokens,
+  loadMore,
   updateFilters,
   resetFilters,
   refresh
 } = useTokens()
+
+// Infinite Scroll Observer
+const sentinel = ref(null)
+const scrollContainer = ref(null)
+let observer = null
+
+const setupObserver = () => {
+  if (observer) observer.disconnect()
+  
+  // Use a slight delay to ensure DOM is settled
+  setTimeout(() => {
+    if (!sentinel.value || !scrollContainer.value) {
+      console.warn('⚠️ Sentinel or Container not found for observer')
+      return
+    }
+
+    observer = new IntersectionObserver((entries) => {
+      const entry = entries[0]
+      if (entry.isIntersecting && hasMore.value && !loading.value) {
+        console.log('📜 Load more triggered by scroll')
+        loadMore()
+      }
+    }, {
+      root: scrollContainer.value,
+      rootMargin: '150px', 
+      threshold: 0.01
+    })
+
+    observer.observe(sentinel.value)
+    console.log('👀 Observer attached to sentinel')
+  }, 100)
+}
+
+// Watch for data/loading changes to re-bind observer if needed
+watch([tokens, loading], () => {
+  if (!loading.value && tokens.value.length > 0) {
+    setupObserver()
+  }
+}, { deep: true })
 
 // Sorting State
 const sortField = ref('rank') // Default sort by rank
@@ -197,5 +255,6 @@ const sortedTokens = computed(() => {
 // Fetch tokens on mount
 onMounted(() => {
   fetchTokens()
+  setupObserver()
 })
 </script>

@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"crypto-agent-backend/cache"
-	"crypto-agent-backend/config"
-	"crypto-agent-backend/models"
-	"crypto-agent-backend/services"
+	"backend/cache"
+	"backend/config"
+	"backend/models"
+	"backend/services"
 	"fmt"
 	"log"
 	"net/http"

@@ -1,8 +1,8 @@
 package services
 
 import (
-	"crypto-agent-backend/models"
-	"crypto-agent-backend/utils"
+	"backend/models"
+	"backend/utils"
 	"math"
 )
 
