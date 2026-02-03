@@ -137,23 +137,28 @@
           </div>
         </div>
 
-        <!-- Sector / Category -->
+        <!-- 24h Change Filter -->
         <div class="space-y-3">
           <label class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
-            <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span> Sector Classification
+            <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span> 24h Change (%)
           </label>
-          <select 
-            v-model="localFilters.category" 
-            @change="onFilterUpdate"
-            class="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-primary/40 focus:bg-white/10 transition-all appearance-none cursor-pointer"
-          >
-            <option value="">All Sectors</option>
-            <option value="L1/L2">L1/L2 Protocols</option>
-            <option value="DeFi">DeFi Engines</option>
-            <option value="AI">AI & Agents</option>
-            <option value="Memecoins">High Volatility / Memes</option>
-            <option value="Infrastructure">Web3 Infra</option>
-          </select>
+          <div class="grid grid-cols-2 gap-2">
+            <input 
+              type="number" 
+              v-model="localFilters.minChange" 
+              @input="onFilterUpdate"
+              placeholder="Min %" 
+              class="bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-primary/40 focus:bg-white/10 transition-all font-mono"
+            />
+            <input 
+              type="number" 
+              v-model="localFilters.maxChange" 
+              @input="onFilterUpdate"
+              placeholder="Max %" 
+              class="bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-primary/40 focus:bg-white/10 transition-all font-mono"
+            />
+          </div>
+          <div class="text-[9px] text-gray-600 font-bold italic">e.g. -5 to 10</div>
         </div>
       </div>
     </div>
